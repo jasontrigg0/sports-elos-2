@@ -1,0 +1,53 @@
+NBA: 15M
+NFL: 12M
+Soccer: 8.4M
+EPL: 4.9M
+F1: 4.9M
+College Football: 4.3M
+Running: 3.9M
+MMA: 3.5M
+Fishing: 3.1M
+MLB: 3M
+Boxing: 3M
+College Basketball: 2.9M
+Baseball: 2.8M
+Hockey: 2.7M
+Tennis: 1.9M
+Crossfit: 1.8M
+Cricket: 1.7M
+Basketball: 1.6M
+Chess: 1.6M
+Olympics: 1.6M
+Climbing: 1.6M
+Snowboarding: 1.6M
+Golf: 1.5M
+Skiing: 1.5M
+NASCAR: 1.4M
+Bundesliga: 1.3M
+Bicycling: 1.2M
+MLS: 954k
+BJJ: 847k
+Rugby Union: 787k
+IPL: 569k
+Skateboarding: 552k
+Swimming: 510k
+IndyCar: 468k
+Mountain Biking: 386k
+MotoGP: 372k
+College Baseball: 332k
+Poker: 300k
+Disc Golf: 285k
+Weightlifting: 275k
+Volleyball: 265k
+Triathlon: 238k
+Judo: 229k
+WNBA: 221k
+Surfing: 207k
+Wrestling: 188k
+Billiards: 179k
+CFL: 173k
+Badminton: 163k
+Kayaking: 154k
+Track and Field: 149k
+ROwing: 117k
+Darts: 107k
