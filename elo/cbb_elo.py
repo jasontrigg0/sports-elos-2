@@ -5,7 +5,7 @@ import csv
 import glob
 
 def load_data():
-    all_files = glob.glob("cbb/cbb_*.csv")
+    all_files = glob.glob("../data/cbb/cbb_*.csv")
 
     league = "cbb"
     
@@ -47,6 +47,7 @@ if __name__ == "__main__":
         "name": "cbb",
         "basic_elo": False,
         "print_new": False,
+        "output_dir": "../",
         "home_adv": 105,
         "elo_components": [
             {
@@ -73,7 +74,7 @@ if __name__ == "__main__":
                 }
             }
         },
-        "normalize": False,
+        "normalize": True,
         "normalize_cnt": 64, #march madness count
         "record_scores": True,
         "has_slow": True,

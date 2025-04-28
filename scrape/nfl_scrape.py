@@ -60,9 +60,9 @@ def scrape_games(year):
     return output
 
 if __name__ == "__main__":
-    with open("nfl.csv","w") as f_out:
-        writer = csv.DictWriter(f_out, fieldnames=["year","game_url","date","home_team","away_team","home_score","away_score","home_yards","away_yards"])
-        writer.writeheader()
-        for year in range(1922,2025):
+    for year in range(1922,2025):
+        with open(f"../data/nfl/nfl_{year}.csv","w") as f_out:
+            writer = csv.DictWriter(f_out, fieldnames=["year","game_url","date","home_team","away_team","home_score","away_score","home_yards","away_yards"])
+            writer.writeheader()
             for game in scrape_games(year):
                 writer.writerow({"year":year,**game})

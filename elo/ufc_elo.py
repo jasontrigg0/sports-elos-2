@@ -3,20 +3,18 @@ sys.path.append(".")
 import elo
 import csv
 import re
-
+import glob
 
 def load_data(complex_score = False):
-    # reader = csv.DictReader(open("ufc.csv"))
-    reader = csv.DictReader(open("ufc.csv"))
-
-    all_match_data = []
-
-    all_rows = sorted([row for row in reader], key = lambda x: x["event_date"])
+    all_rows = []
+    for f in glob.glob("../data/ufc/*"):
+        reader = csv.DictReader(open(f))
+        all_rows += [row for row in reader]
+    all_rows = sorted(all_rows, key = lambda x: x["event_date"])
 
     league = "ufc"
-
     fighter_to_division = {}
-    
+    all_match_data = []
     for row in all_rows:
         fighter_to_division[row["fighter1"]] = row["division"]
         fighter_to_division[row["fighter2"]] = row["division"]
@@ -78,6 +76,7 @@ if __name__ == "__main__":
         "name": "ufc",
         "basic_elo": True,
         "print_new": False,
+        "output_dir": "../",
         "home_adv": 0,
         "elo_components": [
             {
@@ -107,6 +106,7 @@ if __name__ == "__main__":
         "name": "ufc",
         "basic_elo": False,
         "print_new": False,
+        "output_dir": "../",
         "home_adv": 0,
         "elo_components": [
             {
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     }
     
     complex_score = True
-    all_match_data = list(load_data(complex_score))
+    all_match_data = sorted(list(load_data(complex_score)),key=lambda x: x["yyyymmdd"])
     all_events = elo.add_year_ends(all_match_data, lambda x: "1231")
 
     config = score_config if complex_score else basic_config

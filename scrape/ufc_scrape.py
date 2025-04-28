@@ -4,7 +4,7 @@ from datetime import datetime
 import csv
 import re
 
-def get_all_fight_stats():
+def get_all_fight_stats(cutoff_year):
     html = requests.get("http://ufcstats.com/statistics/events/completed?page=all").content
     soup = BeautifulSoup(html, features="lxml")
     all_events = soup.select("tbody tr")
@@ -15,6 +15,8 @@ def get_all_fight_stats():
         event_url = event.select("a.b-link")[0]["href"]
         event_date = event.select("span.b-statistics__date")[0].text.strip()
         date = datetime.strptime(event_date, "%B %d, %Y").strftime("%Y%m%d")
+        if cutoff_year and date[:4] < str(cutoff_year):
+            return
         print(date, event_name)
         event_data = {
             "event": event_name,
@@ -129,9 +131,16 @@ def get_fight_details(fight_url):
     return output
     
 if __name__ == "__main__":
-    with open("ufc.csv","w") as f_out:
-        writer = csv.DictWriter(f_out, fieldnames=["event","event_url","event_date","fighter1","fighter2","division","result","method","round","time","num_rounds","num_minutes","judge1","judge2","judge3"])
-        writer.writeheader()
-        for fight in get_all_fight_stats():
-            writer.writerow(fight)
+    #run with cutoff_year = 0 to pull all history
+    #or with cutoff_year = year_to_scrape to pull only the current year
+    cutoff_year = 2025
+    year_to_writer = {}
+    for fight in get_all_fight_stats(cutoff_year):
+        year = fight["event_date"][:4]
+        if not year in year_to_writer:
+            writer = csv.DictWriter(open(f"../data/ufc/ufc_{year}.csv","w"), fieldnames=["event","event_url","event_date","fighter1","fighter2","division","result","method","round","time","num_rounds","num_minutes","judge1","judge2","judge3"])
+            writer.writeheader()
+            year_to_writer[year] = writer
 
+        writer = year_to_writer[year]
+        writer.writerow(fight)

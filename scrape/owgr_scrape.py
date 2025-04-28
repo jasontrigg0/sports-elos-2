@@ -3,19 +3,21 @@ from bs4 import BeautifulSoup
 import re
 import csv
 
-def get_all_event_info():
+def get_all_event_info(year, token):
     #owgr goes back to the 80s but doesn't have round-by-round data until 2006
-    for year in range(2005,2025):
-        event_list = requests.get(f"https://apiweb.owgr.com/api/owgr/events/getEventsToDate?year={year}&pageSize=0&pageNumber=1&tourId=0&sortString=WeekNumber+DESC,+Winners[0].PointsAwarded+DESC").json()["eventsList"]
-        for event in event_list:
-            for row in get_event_info(event["id"]):
-                yield row
+    event_list = requests.get(f"https://apiweb.owgr.com/api/owgr/events/getEventsToDate?year={year}&pageSize=0&pageNumber=1&tourId=0&sortString=WeekNumber+DESC,+Winners[0].PointsAwarded+DESC").json()["eventsList"]
+    for event in event_list:
+        for row in get_event_info(event["id"], token):
+            yield row
 
-def get_event_info(event_id):
-    print(f"pulling event {event_id}")
-    #haven't automated fully, can find token by visiting https://www.owgr.com/events-to-date
+def get_token():
+    #can find token by visiting https://www.owgr.com/events-to-date
     #then clicking on an event which will trigger an request that includes the token
-    token = "N3dlN84QkXsrjYtRgG5QE"
+    data = requests.get("https://www.owgr.com/events-to-date").text
+    return re.findall("/_next/static/([^/]*?)/_buildManifest.js",data)[0]
+            
+def get_event_info(event_id, token):
+    print(f"pulling event {event_id}")
     data = requests.get(f"https://www.owgr.com/_next/data/{token}/events/{event_id}.json?slug={event_id}").json()
     event_details = data["pageProps"]["eventDetailsData"]["eventDetails"]
     start_date = event_details["startDate"].split("T")[0].replace("-","")
@@ -57,7 +59,10 @@ def get_event_info(event_id):
             }
 
 if __name__ == "__main__":
-    writer = csv.DictWriter(open("/tmp/pga.csv",'w'),fieldnames=["player_id", "player_name", "event_id", "start_date", "round", "score"])
-    writer.writeheader()
-    for row in get_all_event_info():
-        writer.writerow(row)
+    token = get_token()
+    # for year in range(2006,2025):
+    for year in range(2025,2026):
+        writer = csv.DictWriter(open(f"/files/git/sports-elos-2/data/owgr/owgr_{year}.csv",'w'),fieldnames=["player_id", "player_name", "event_id", "start_date", "round", "score"])
+        writer.writeheader()
+        for row in get_all_event_info(year, token):
+            writer.writerow(row)

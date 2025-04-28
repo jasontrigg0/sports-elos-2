@@ -1,86 +1,76 @@
-import csv
 import requests
+import json
+import re
+import csv
 
-def get_all_liv_rows():
-    for event in get_all_liv_events():
-        start_date = event["startDate"].split("T")[0].replace("-","")
-        for row in get_liv_event_data(event["year"], event["eventId"], start_date):
-            yield row
+def get_event_results(event_name):
+    url = f"https://www.livgolf.com/schedule/{event_name}/leaderboard?_rsc=k4aap"
 
-
-def get_all_liv_events():
     headers = {
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0',
-        'Accept': '*/*',
-        'Accept-Language': 'en-US,en;q=0.5',
-        # 'Accept-Encoding': 'gzip, deflate, br',
-        'Referer': 'https://www.livgolf.com/',
-        'Origin': 'https://www.livgolf.com',
-        'DNT': '1',
-        'Connection': 'keep-alive',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-site',
-        'Pragma': 'no-cache',
-        'Cache-Control': 'no-cache',
-        # Requests doesn't support trailers
-        # 'TE': 'trailers',
+        "RSC": "1",
     }
 
-    for year in [2022,2023,2024]:
-        for event in (requests.get(f'https://web-common.livgolf.com/api/events/previous/{year}', headers=headers)).json():
-            yield {**event, "year": year}
+    response = requests.get(url, headers=headers)
 
-def get_liv_event_data(year, event_id, start_date):
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0',
-        'Accept': '*/*',
-        'Accept-Language': 'en-US,en;q=0.5',
-        # 'Accept-Encoding': 'gzip, deflate, br',
-            'Access-Control-Request-Method': 'GET',
-        'Access-Control-Request-Headers': 'x-cf-preview',
-        'Referer': 'https://www.livgolf.com/',
-        'Origin': 'https://www.livgolf.com',
-        'DNT': '1',
-        'Connection': 'keep-alive',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-site',
-        'Pragma': 'no-cache',
-        'Cache-Control': 'no-cache',
-        # Requests doesn't support trailers
-        # 'TE': 'trailers',
-    }
+    matches = [l for l in response.text.split("\n") if "playersLeaderboard" in l]
 
-    event = requests.get(f'https://web-common.livgolf.com/api/leaderboard/players/{event_id}', headers=headers).json()
+    if len(matches) != 1:
+        raise Exception("New format")
 
-    for player_result in event["players"]:
-        for round_ in player_result["rounds"]:
-            if round_["id"] == "301": continue #this is the total score
-            if round_["id"] == "201": continue #not sure about this one but only one instance
-            
-            score = round_["score"]
-
-            if score == "": #player didn't play this round (why?)
-                continue
+    l = matches[0]
+    l = re.sub("^.+?:","",l)
+    data = json.loads(l)
+    for player in data[3]["leaderboardResult"]["playersLeaderboard"]:
+        for round_ in player["roundScores"]:
+            score = round_["roundScore"]
 
             if score == "E":
                 score = 0
             else:
                 score = score.replace("+","")
 
+            if score == "-": continue
+                
             yield {
-                "player_id": player_result["id"],
-                "player_name": player_result["name"],
-                "event_id": event_id,
-                "round": round_["id"],
-                "score": score,
-                "start_date": start_date
+                "player_id": player["playerId"],
+                "player_name": " ".join([player["playerFirstName"],player["playerLastName"]]),
+                "round": round_["roundNumber"],
+                "score": score
             }
-
-
+    
+                
+def get_all_events(year):
+    url = "https://www.livgolf.com/schedule"
+    headers = {
+        "Next-Action": "a71dbe0d7cf2287e38a8a70433dc04aa4c45b5ba",
+    }
+    payload = f'''["{year}",[]]'''
+    response = requests.post(url, headers=headers, data=payload)
+    for l in response.text.split("\n"):
+        if "completedEvents" in l:
+            l = re.sub("^(.*?){","{",l)
+            data = json.loads(l)
+            for e in data["completedEvents"]:
+                event_name = e["entity"]["slug"]
+                event_id = e["entity"]["fields"]["livEventId"]
+                print(event_name, event_id)
+                start_date = e["entity"]["fields"]["startDate"].split("T")[0].replace("-","")
+                yield {
+                    "event_id": event_id,
+                    "event_name": event_name,
+                    "start_date": start_date,
+                }
+                
+            
 if __name__ == "__main__":
-    writer = csv.DictWriter(open("/tmp/liv.csv",'w'),fieldnames=["player_id", "player_name", "event_id", "start_date", "round", "score"])
-    writer.writeheader()
-    for row in sorted(get_all_liv_rows(), key=lambda x: (dict(x)["event_id"], dict(x)["round"])):
-        writer.writerow(row)
+    for year in range(2022, 2026):
+        print(year)
+        writer = csv.DictWriter(open(f"/files/git/sports-elos-2/data/liv/liv_{year}.csv",'w'),fieldnames=["player_id", "player_name", "event_id", "event_name", "start_date", "round", "score"])
+        writer.writeheader()
+        events = get_all_events(year)
+        for e in events:
+            #skip team championships and other year end events without good data
+            if e["event_name"] in ["miami-2022","miami-2023","liv-golf-team-championship-dallas-2024","promotions-event-2024"]: continue
+            for result in get_event_results(e["event_name"]):
+                row = {**e, **result}
+                writer.writerow(row)

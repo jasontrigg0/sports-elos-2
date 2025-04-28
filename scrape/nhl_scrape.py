@@ -45,10 +45,11 @@ def scrape_games(url):
     return output
 
 if __name__ == "__main__":
-    with open("nhl.csv","w") as f_out:
-        writer = csv.DictWriter(f_out, fieldnames=["year","game_url","date","home_team","away_team","home_score","away_score"])
-        writer.writeheader()
-        for year in range(2024,2025):
-            print(year)
+    # for year in range(1917,2025):
+    for year in range(2024,2025):
+        print(year)
+        with open(f"../data/nhl/nhl_{year}.csv","w") as f_out:
+            writer = csv.DictWriter(f_out, fieldnames=["year","game_url","date","home_team","away_team","home_score","away_score"])
+            writer.writeheader()
             for game in scrape_games(year):
                 writer.writerow({"year":year,**game})

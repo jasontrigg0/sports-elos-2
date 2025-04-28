@@ -74,9 +74,9 @@ def scrape_games(team_info):
         
 if __name__ == "__main__":
     # for year in range(1900,2025):
-    for year in range(2024,2025):
+    for year in range(2024, 2025):
         print(year)
-        with open(f"cbb/cbb_{year}.csv","w") as f_out:
+        with open(f"../data/cbb/cbb_{year}.csv","w") as f_out:
             writer = csv.DictWriter(f_out, fieldnames=["year","game_url","date","home_team","away_team","home_score","away_score","is_neutral"])
             writer.writeheader()
 

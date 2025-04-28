@@ -151,6 +151,7 @@ class Elo:
 
         self.basic_elo = config["basic_elo"]
         self.print_new = config["print_new"]
+        self.output_dir = config["output_dir"]
         
         self.home_adv = config.get("home_adv")
         
@@ -705,18 +706,22 @@ class Elo:
             
             fieldnames = ["category","name","date","score"]
             
-            best_raw_file = f"scores/{self.name}_best_raw.csv"
+            best_raw_file = self.output_dir + f"scores/{self.name}_best_raw.csv"
             writer_best_raw = csv.DictWriter(open(best_raw_file,'w'),fieldnames=fieldnames)
             writer_best_raw.writeheader()
             
-            best_adj_file = f"scores/{self.name}_best_adj.csv"
+            best_adj_file = self.output_dir + f"scores/{self.name}_best_adj.csv"
             writer_best_adj = csv.DictWriter(open(best_adj_file,'w'),fieldnames=fieldnames)
             writer_best_adj.writeheader()
+
+            curr_raw_file = self.output_dir + f"scores/{self.name}_curr_raw.csv"
+            writer_curr_raw = csv.DictWriter(open(curr_raw_file,'w'),fieldnames=fieldnames)
+            writer_curr_raw.writeheader()
             
-            curr_adj_file = f"scores/{self.name}_curr_adj.csv"
+            curr_adj_file = self.output_dir + f"scores/{self.name}_curr_adj.csv"
             writer_curr_adj = csv.DictWriter(open(curr_adj_file,'w'),fieldnames=fieldnames)
             writer_curr_adj.writeheader()
-            
+
             #convert score to a scale from 0-100. The best team in the average year will score 50.
             adjust_score = lambda score, mean, std: 1 - scipy.stats.norm.cdf(-1 * self.sign * (float(score) - mean) / std)
 
@@ -725,6 +730,12 @@ class Elo:
                 year = res["yyyymmdd"][:4]
                 mean, std = get_stats(year)
                 
+                writer_curr_raw.writerow({
+                    "category": self.name,
+                    "name": res[self.primary_component["external_name"]],
+                    "date": self.data["latest_match_date"],
+                    "score": self.score_metric(res),
+                })
                 writer_curr_adj.writerow({
                     "category": self.name,
                     "name": res[self.primary_component["external_name"]],

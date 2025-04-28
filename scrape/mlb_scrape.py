@@ -21,7 +21,8 @@ def scrape_games(year):
         date = game_day.select("a")[-1]["href"].split("=")[-1].replace("-","")
         for game in game_day.select("p.game"):
             if "(Spring)" in game.text: continue
-        
+            if "Preview" in game.text: continue
+            
             print(game.select("a"))
             away_team = game.select('a')[0]["href"].split("/")[2]
             home_team = game.select('a')[1]["href"].split("/")[2]
@@ -50,10 +51,11 @@ def scrape_games(year):
     return output
 
 if __name__ == "__main__":
-    with open("mlb.csv","w") as f_out:
-        writer = csv.DictWriter(f_out, fieldnames=["year","game_url","date","home_team","away_team","home_score","away_score"])
-        writer.writeheader()
-        for year in range(1876,2025):
-            print(year)
+    # for year in range(1876,2025):
+    for year in range(2025,2026):
+        print(year)
+        with open(f"../data/mlb/mlb_{year}.csv","w") as f_out:
+            writer = csv.DictWriter(f_out, fieldnames=["year","game_url","date","home_team","away_team","home_score","away_score"])
+            writer.writeheader()
             for game in scrape_games(year):
                 writer.writerow({"year":year,**game})

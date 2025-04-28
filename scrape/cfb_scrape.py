@@ -55,10 +55,10 @@ def scrape_games(year):
 
 
 if __name__ == "__main__":
-    with open("cfb.csv","w") as f_out:
-        writer = csv.DictWriter(f_out, fieldnames=["year","game_url","date","home_team","away_team","home_score","away_score","is_neutral"])
-        writer.writeheader()
-        for year in range(1869,2025):
-            print(year)
+    for year in range(1869,2025):
+        print(year)
+        with open(f"../data/cfb/cfb_{year}.csv","w") as f_out:
+            writer = csv.DictWriter(f_out, fieldnames=["year","game_url","date","home_team","away_team","home_score","away_score","is_neutral"])
+            writer.writeheader()
             for game in scrape_games(year):
                 writer.writerow({"year":year,**game})

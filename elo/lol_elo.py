@@ -3,6 +3,7 @@ sys.path.append(".")
 import elo
 import csv
 import re
+import glob
 
 RECOGNIZED_LEAGUES = [
     "LDL",
@@ -163,11 +164,13 @@ def league_name_to_id(league_name):
    return league_id
 
 def load_data():
-    reader = csv.DictReader(open("lol.csv"))
+    all_rows = []
+    for f in glob.glob("../data/lol/*"):
+        reader = csv.DictReader(open(f))
+        all_rows += [row for row in reader]
 
     team_to_league_name = {}
-    
-    for row in reader:
+    for row in all_rows:
         team1_name = row["Team1"]
         team1_id = team_name_to_id(team1_name)
 
@@ -223,7 +226,7 @@ def load_data():
         }
     
 if __name__ == "__main__":
-    all_match_data = list(load_data())
+    all_match_data = sorted(list(load_data()),key=lambda x: x["yyyymmdd"])
 
     def get_cutoff(year):
         all_year_ends = {
@@ -254,6 +257,7 @@ if __name__ == "__main__":
         "name": "lol",
         "basic_elo": True,
         "print_new": False,
+        "output_dir": "../",
         "home_adv": 0,
         "elo_components": [
             {
@@ -294,4 +298,3 @@ if __name__ == "__main__":
     elo_calc = elo.Elo(all_events, config)
     elo_calc.generate_elos()
     elo_calc.print_elos()
-    

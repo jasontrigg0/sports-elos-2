@@ -72,7 +72,7 @@ def gen_results(info):
 def load_data():
     all_match_data = []
     
-    for filename in sorted(glob.glob("../tennis_atp/atp_matches_????.csv")):
+    for filename in sorted(glob.glob("../../tennis_atp/atp_matches_????.csv")):
         reader = csv.DictReader(open(filename))
         all_match_data += sorted([row for row in reader], key = lambda x: (x["tourney_date"],x["match_num"]))
 
@@ -121,11 +121,13 @@ def load_data():
         }
 
 if __name__ == "__main__":
-    all_match_data = list(load_data())
+    all_match_data = sorted(list(load_data()), key = lambda x: x["yyyymmdd"])
+    
     
     basic_config = {
         "basic_elo": True,
         "print_new": False,
+        "output_dir": "../",
         "home_adv": 0,
         "new_k_mult": 1.5,
         "year_end_shrinkage_frac": None,
@@ -162,6 +164,7 @@ if __name__ == "__main__":
     games_config = {
         "basic_elo": False,
         "print_new": False,
+        "output_dir": "../",
         "home_adv": 0,
         "new_k_mult": 16,
         "year_end_shrinkage_frac": None,
@@ -199,6 +202,7 @@ if __name__ == "__main__":
     games_config = {
         "basic_elo": False,
         "print_new": False,
+        "output_dir": "../",
         "home_adv": 0,
         "new_k_mult": 20,
         "year_end_shrinkage_frac": None,
@@ -236,6 +240,7 @@ if __name__ == "__main__":
         "name": "atp",
         "basic_elo": False,
         "print_new": False,
+        "output_dir": "../",
         "home_adv": 0,
         "elo_components": [
             {
@@ -289,7 +294,7 @@ if __name__ == "__main__":
                 }
             }
         },
-        "normalize": False,
+        "normalize": True,
         "normalize_cnt": 128,
         "alltime_window": 10000, #240
         "record_scores": True,
