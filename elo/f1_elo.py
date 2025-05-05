@@ -281,7 +281,7 @@ if __name__ == "__main__":
         "normalize_cnt": 20,
         "alltime_window": 10000, #240
         "record_scores": True,
-        "score_metric": lambda info: info["comp"]["player"],
+        #"score_metric": lambda info: info["comp"]["player"],
     }
 
     elo_calc = elo.Elo(all_match_data, config)
