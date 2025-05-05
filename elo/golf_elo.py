@@ -3,11 +3,47 @@ sys.path.append(".")
 import elo
 import csv
 import glob
+import datetime
 
-def load_liv_data():
+def load_pga_data():
+    matches = {}
+
+    for f in glob.glob("../../data-stories/src/llm_leaderboard/pga.csv"):
+        reader = csv.DictReader(open(f))
+
+        for row in reader:
+            #only PGA events for now
+            #Senior Tour isn't properly normalizing
+            if row["tournament_id"][0] != "R": continue
+        
+            key = row["tournament_id"] + f" (round {row['round']})"
+            matches.setdefault(key,{
+                "type": "match",
+                "yyyymmdd": datetime.datetime.strptime(row["date"],"%m.%d.%Y").strftime("%Y%m%d"),
+                "event": key,
+            })
+            matches[key].setdefault("results",[]).append({
+                "player_id": row["player_id"],
+                "player_name": row["player_name"],
+                "league_id": "pga",
+                "league_name": "pga",
+                "opp_id": "",
+                "opp_name": "",
+                "is_home": "NEUTRAL",
+                "raw_score": int(row["score"]),
+                "score_type": "default"
+            })
+
+    singletons = [key for key in matches if len(matches[key]["results"]) == 1]
+    for x in singletons:
+        del matches[x]
+            
+    return list(matches.values())
+
+def load_liv_data(fieldname):
     liv_owgr_id_map = {}
     for row in csv.DictReader(open("../data/liv_owgr_map.csv")):
-        liv_owgr_id_map[row["liv_id"]] = row["owgr_id"]
+        liv_owgr_id_map[row["liv_id"]] = row[fieldname]
 
     matches = {}
 
@@ -70,8 +106,14 @@ def load_owgr_data():
 
     return list(matches.values())
 
+def load_liv_owgr():
+    return sorted([*load_liv_data("owgr_id"), *load_owgr_data()], key = lambda x: x["yyyymmdd"])
+
+def load_liv_pga():
+    return sorted([*load_liv_data("pga_id"), *load_pga_data()], key = lambda x: x["yyyymmdd"])
+
 if __name__ == "__main__":
-    all_match_data = sorted([*load_liv_data(), *load_owgr_data()], key = lambda x: x["yyyymmdd"])
+    all_match_data = load_liv_pga()
     #all_match_data = [x for x in all_match_data if x["yyyymmdd"] < "20230401"]
     all_events = elo.add_year_ends(all_match_data, lambda x: "1231")
 
@@ -80,7 +122,7 @@ if __name__ == "__main__":
         "basic_elo": False,
         "print_new": False,
         "output_dir": "../",
-        "modern_era_start": "20070101",
+        "modern_era_start": "19600101", #"20070101",
         "elo_components": [
             {
                 "name": "player",
