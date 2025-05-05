@@ -557,11 +557,11 @@ class Elo:
             self.data["all-time-top-eoy"].push(info, -1 * self.sign * metric)
             self.data["this-year-top-eoy"].push(info, -1 * self.sign * metric)
 
-        this_year_top = self.data["this-year-top"].to_list()[0]
+        this_year_top = self.data["this-year-top"].to_list()[:2]
         self.data["annual-top"].append(this_year_top)
         self.data["this-year-top"].clear()
 
-        this_year_top_eoy = self.data["this-year-top-eoy"].to_list()[0]
+        this_year_top_eoy = self.data["this-year-top-eoy"].to_list()[:2]
         self.data["annual-top-eoy"].append(this_year_top_eoy)
         self.data["this-year-top-eoy"].clear()
             
@@ -651,7 +651,7 @@ class Elo:
 
         annual_best_config = {
             "key": self.primary_external_id,
-            "cnt": 1,
+            "cnt": 2,
             "window": math.inf,
             "start": None
         }
@@ -687,27 +687,38 @@ class Elo:
             annual_list = "annual-top" if self.year_round else "annual-top-eoy"
             alltime_list = "all-time-top" if self.year_round else "all-time-top-eoy"
             
-            all_bests = [{"res": x, "score": self.score_metric(x)} for x in self.data[annual_list] if is_modern(x)]
+            all_bests = [{"res": x[0], "score": self.score_metric(x[0])} for x in self.data[annual_list] if is_modern(x[0])]
+            all_runnerups = [{"res": x[1], "score": self.score_metric(x[1])} for x in self.data[annual_list] if is_modern(x[0])]
+
             if len(all_bests) == 0: return
 
+            avg_gap = statistics.mean([x["score"] - y["score"] for x,y in zip(all_bests,all_runnerups)])
+            sd_best = statistics.stdev([x["score"] for x in all_bests])
+            
             rolling_mean = {}
             rolling_std = {}
 
             def get_stats(year):
                 if year not in rolling_mean:
-                    bests_in_range = [x["score"] for x in all_bests if int(year)-10 < int(x["res"]["yyyymmdd"][:4]) < int(year) + 10]
-                    rolling_mean[year] = statistics.mean(bests_in_range)
-                    rolling_std[year] = statistics.stdev(bests_in_range)
-                    
+                    runnerups_in_range = [x["score"] for x in all_runnerups if int(year)-10 < int(x["res"]["yyyymmdd"][:4]) < int(year) + 10]
+                    rolling_mean[year] = statistics.mean(runnerups_in_range) + avg_gap
+                    rolling_std[year] = sd_best #statistics.stdev(runnerups_in_range)
+
+                #print(year, rolling_mean[year], rolling_std[year])
                 return rolling_mean[year], rolling_std[year]
                     
             # print(self.data[annual_list])
             # print(mean, std)
+            all_sorted_elos = self.get_sorted_active_elos(self.data["latest_match_date"])
             
             fieldnames = ["category","name","date","score"]
+
+            raw_fieldnames = fieldnames
+            if len(all_sorted_elos["total"][0]["comp"]) > 1:
+                raw_fieldnames += [x for x in all_sorted_elos["total"][0]["comp"]]
             
             best_raw_file = self.output_dir + f"scores/{self.name}_best_raw.csv"
-            writer_best_raw = csv.DictWriter(open(best_raw_file,'w'),fieldnames=fieldnames)
+            writer_best_raw = csv.DictWriter(open(best_raw_file,'w'),fieldnames=raw_fieldnames)
             writer_best_raw.writeheader()
             
             best_adj_file = self.output_dir + f"scores/{self.name}_best_adj.csv"
@@ -715,7 +726,7 @@ class Elo:
             writer_best_adj.writeheader()
 
             curr_raw_file = self.output_dir + f"scores/{self.name}_curr_raw.csv"
-            writer_curr_raw = csv.DictWriter(open(curr_raw_file,'w'),fieldnames=fieldnames)
+            writer_curr_raw = csv.DictWriter(open(curr_raw_file,'w'),fieldnames=raw_fieldnames)
             writer_curr_raw.writeheader()
             
             curr_adj_file = self.output_dir + f"scores/{self.name}_curr_adj.csv"
@@ -725,17 +736,24 @@ class Elo:
             #convert score to a scale from 0-100. The best team in the average year will score 50.
             adjust_score = lambda score, mean, std: 1 - scipy.stats.norm.cdf(-1 * self.sign * (float(score) - mean) / std)
 
-            all_sorted_elos = self.get_sorted_active_elos(self.data["latest_match_date"])
             for i, res in enumerate(all_sorted_elos["total"]):
                 year = res["yyyymmdd"][:4]
                 mean, std = get_stats(year)
-                
-                writer_curr_raw.writerow({
+
+                raw_obj = {
                     "category": self.name,
                     "name": res[self.primary_component["external_name"]],
                     "date": self.data["latest_match_date"],
                     "score": self.score_metric(res),
-                })
+                }
+
+                #add subcomponents to the score if they exist
+                if len(res["comp"].keys()) > 1:
+                    for x in res["comp"]:
+                        raw_obj[x] = res["comp"][x]
+                
+                writer_curr_raw.writerow(raw_obj)
+
                 writer_curr_adj.writerow({
                     "category": self.name,
                     "name": res[self.primary_component["external_name"]],
@@ -746,12 +764,18 @@ class Elo:
                 year = res["yyyymmdd"][:4]
                 mean, std = get_stats(year)
 
-                writer_best_raw.writerow({
+                raw_obj = {
                     "category": self.name,
                     "name": res[self.primary_component["external_name"]],
                     "date": res["yyyymmdd"],
                     "score": self.score_metric(res),
-                })
+                }
+                
+                if len(res["comp"].keys()) > 1:
+                    for x in res["comp"]:
+                        raw_obj[x] = res["comp"][x]
+                        
+                writer_best_raw.writerow(raw_obj)
                 writer_best_adj.writerow({
                     "category": self.name,
                     "name": res[self.primary_component["external_name"]],
