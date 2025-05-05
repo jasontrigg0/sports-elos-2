@@ -148,6 +148,7 @@ if __name__ == "__main__":
         "sign": -1,
         "normalize": True,
         "normalize_cnt": 125, #number of tour pros
+        "alltime_window": 10000,
         "record_scores": True,
         "has_binary_result": False,
     }
