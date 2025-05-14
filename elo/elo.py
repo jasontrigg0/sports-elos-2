@@ -283,7 +283,7 @@ class Elo:
             for update in update_info:
                 self.update_alltime(update["res"])
 
-        return stats    
+        return stats
     def run_match_setup(self, res, match_results):
         for comp in self.elo_components:
             self.data["most-recent-res"].setdefault(comp["name"],{})
@@ -295,7 +295,7 @@ class Elo:
         #eg initialize elo for a new league
         #and track the current league for a team
         self.update_comp_info(res)
-        
+
         self.data["last_active"][res["player_id"]] = res["yyyymmdd"]
             
     def update_match_cnts(self, res, match_results):
@@ -690,7 +690,7 @@ class Elo:
             all_bests = [{"res": x[0], "score": self.score_metric(x[0])} for x in self.data[annual_list] if is_modern(x[0])]
             all_runnerups = [{"res": x[1], "score": self.score_metric(x[1])} for x in self.data[annual_list] if is_modern(x[0])]
 
-            if len(all_bests) == 0: return
+            if len(all_bests) <= 1: return
 
             avg_gap = statistics.mean([x["score"] - y["score"] for x,y in zip(all_bests,all_runnerups)])
             sd_best = statistics.stdev([x["score"] for x in all_bests])
