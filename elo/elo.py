@@ -248,7 +248,7 @@ class Elo:
             if version == "main":
                 for res in match_results:
                     self.run_match_setup(res, match_results)
-            
+                    
             player_to_relative_score = self.get_relative_score(match_results)
             player_to_relative_skill = self.get_relative_skill(match_results, version)
 
@@ -509,7 +509,12 @@ class Elo:
             skill_fn = lambda res: self.data["_slow"][res["player_id"]]
         else:
             raise
-            
+
+        # leagues = set([x["league_id"] for x in match_results])
+        # if len(leagues) > 1 and "LFL" in leagues:
+        #     print(match_results)
+        #     raise
+        
         #for each contestant the difference between their skill and the opponent's
         sum_raw = sum([skill_fn(x) for x in match_results])
         player_cnt = len(match_results)

@@ -5,6 +5,13 @@ import csv
 import re
 import glob
 
+def get_league_type(league):
+    if league in ["LCK","LPL","LCS","LEC","LTA"]:
+        return "major"
+    else:
+        return "minor"
+
+
 RECOGNIZED_LEAGUES = [
     "LDL",
     "LPL",
@@ -68,6 +75,7 @@ RECOGNIZED_LEAGUES = [
     "Liga Nexo", #spanish third league
     "LCK AS", #parent: LCK CL
     "LST", #philippines and thailand
+    "LTA",
 ]
 
 def team_name_to_id(name):
@@ -169,6 +177,11 @@ def load_data():
         reader = csv.DictReader(open(f))
         all_rows += [row for row in reader]
 
+    get_date = lambda x: x["DateTime UTC"].split()[0].replace("-","")
+        
+    #need to sort before running league information
+    all_rows = sorted(all_rows, key=lambda x: get_date(x))
+        
     team_to_league_name = {}
     for row in all_rows:
         team1_name = row["Team1"]
@@ -193,7 +206,7 @@ def load_data():
         team2_league_name = team_to_league_name.get(team2_id, "unknown")
         team2_league_id = league_name_to_id(team2_league_name)
         
-        yyyymmdd = row["DateTime UTC"].split()[0].replace("-","")
+        yyyymmdd = get_date(row)
 
         yield {
             "type": "match",
@@ -205,6 +218,8 @@ def load_data():
                     "player_name": team1_name,
                     "league_id": team1_league_id,
                     "league_name": team1_league_name,
+                    "league_type_id": get_league_type(team1_league_id),
+                    "league_type_name": get_league_type(team1_league_id),
                     "opp_id": team2_id,
                     "opp_name": team2_name,
                     "is_home": "NEUTRAL",
@@ -216,6 +231,8 @@ def load_data():
                     "player_name": team2_name,
                     "league_id": team2_league_id,
                     "league_name": team2_league_name,
+                    "league_type_id": get_league_type(team2_league_id),
+                    "league_type_name": get_league_type(team2_league_id),
                     "opp_id": team1_id,
                     "opp_name": team1_name,
                     "is_home": "NEUTRAL",
@@ -227,6 +244,7 @@ def load_data():
     
 if __name__ == "__main__":
     all_match_data = sorted(list(load_data()),key=lambda x: x["yyyymmdd"])
+    #all_match_data = [x for x in all_match_data if x["yyyymmdd"] < "20170601"]
 
     def get_cutoff(year):
         all_year_ends = {
@@ -273,6 +291,13 @@ if __name__ == "__main__":
                 "external_id": "league_id",
                 "primary": False,
                 "event_subtype": False,
+            },
+            {
+                "name": "league_type",
+                "external_name": "league_type_name",
+                "external_id": "league_type_id",
+                "primary": False,
+                "event_subtype": False,
             }
         ],
         "elo_settings": {
@@ -285,6 +310,11 @@ if __name__ == "__main__":
                 },
                 "league": {
                     "k": 15,
+                    "update_max": 1000,
+                    "year_end_shrinkage_frac": 0.05,
+                },
+                "league_type": {
+                    "k": 0,
                     "update_max": 1000,
                     "year_end_shrinkage_frac": 0.05,
                 },
