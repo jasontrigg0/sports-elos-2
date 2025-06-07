@@ -194,10 +194,21 @@ def get_tournament_details(tournament_id):
     tournament_info = response.json()["data"]["tournaments"][0]
 
     display_date = tournament_info["displayDate"]
+
+    #different formats depending on whether the tournament runs past month-end:
+    #May 25-28, 2025
+    #May 31-Jun 3, 2025
     year_str = display_date.split(",")[1].strip()
-    month_str = display_date.split()[0]
+    
+    post_hyphen = display_date.split(",")[0].split("-")[1].strip()
+    if re.findall("[a-z]",post_hyphen):
+        month_str = post_hyphen.split()[0]
+        day_str = post_hyphen.split()[1]
+    else:
+        month_str = display_date.split()[0]
+        day_str = display_date.split(",")[0].split("-")[1].strip()
+
     month_num = datetime.datetime.strptime(month_str, '%b').month
-    day_str = display_date.split(",")[0].split("-")[1].strip()
 
     return {
         "tournament_id": tournament_info["id"],

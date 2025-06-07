@@ -35,17 +35,20 @@ def get_event_fight_stats(event_url):
     all_fights = soup.select("tbody tr")
     for fight in all_fights:
         fight_url = fight["data-link"]
-        details = get_fight_details(fight_url)
         
         all_cells = fight.select("td")
         if len(all_cells) < 7:
             raise
+        
         result_raw_text = all_cells[0].text.strip()
+        if not result_raw_text: continue
+        
         result = list(set(result_raw_text.split()))
         if len(result) > 1: raise
         if result[0] == "nc": continue
         result_numeric = {"win":1,"draw":0.5}[result[0]]
         
+        details = get_fight_details(fight_url)
         fight_data = {
             "fighter1": all_cells[1].select("p")[0].text.strip(),
             "fighter2": all_cells[1].select("p")[1].text.strip(),
