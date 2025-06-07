@@ -25,7 +25,7 @@ def scrape_games(url):
     for game in soup.select('tbody tr:not(.thead)'):
         #if game.select('td[data-stat="game_date"]')[0].text == "Playoffs": continue
         game_url = game.select('td[data-stat="box_score_text"] a')[0]["href"]
-        date = re.findall("\d{8}",game_url)[0]
+        date = re.findall(r"\d{8}",game_url)[0]
         
         is_home = game.select('td[data-stat="game_location"]')[0].text == ""
         team1 = re.findall("[A-Z]{3}",url)[0]

@@ -193,6 +193,7 @@ class Elo:
             "err": 0,
         }
 
+        info = None
         with open("output.csv","w") as f_out:
             writer = csv.DictWriter(f_out, fieldnames=["yyyymmdd","player_id","player","elo"])
             writer.writeheader()
@@ -230,6 +231,9 @@ class Elo:
                         
                 stats["err"] += match_stats["err"]
 
+        if not info:
+            raise Exception("No matches found")
+        
         self.normalize_elos(info["yyyymmdd"])
         print(f"Error: {stats}")
     def update_elos_from_match_group(self, match_group, version="main"):

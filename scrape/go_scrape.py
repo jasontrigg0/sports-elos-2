@@ -38,7 +38,7 @@ def get_year(year):
         for pair in chunks(rows[2:],2):
             first, second = pair
             info = first.select("td")[0].text.strip()
-            date = re.findall("[0-9\-]+",info)[0]
+            date = re.findall(r"[0-9\-]+",info)[0]
             event = info.split(" ",1)[1]
             black = second.select("td")[0].text.rsplit(" ",1)[0]
             white = second.select("td")[1].text.rsplit(" ",1)[0]
@@ -58,9 +58,10 @@ if __name__ == "__main__":
     writer.writeheader()
     for p in players:
         writer.writerow(p)
-    raise
-    
-    for year in range(2020, 1968, -1): #2021, 2022): #1969,2026):
+
+    #for year in range(1969, 2026):
+
+    for year in range(2025, 2026):
         print(year)
         with open(f"../data/go/go_{year}.csv","w") as f_out:
             writer = csv.DictWriter(f_out, fieldnames=["year","date","event","black","white","winner"])

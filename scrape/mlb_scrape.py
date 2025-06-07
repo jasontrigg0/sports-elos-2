@@ -32,7 +32,7 @@ def scrape_games(year):
             else:
                 game_url = ""
                 
-            scores = re.findall("\(\d+\)",game.text)
+            scores = re.findall(r"\(\d+\)",game.text)
             away_score = scores[0].replace("(","").replace(")","")
             home_score = scores[1].replace("(","").replace(")","")
 

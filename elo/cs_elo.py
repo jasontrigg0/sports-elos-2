@@ -5,7 +5,7 @@ sys.path.append(".")
 import elo
 
 def load_data():
-    all_files = glob.glob("/files/git/esports-elos/csgo/csgo_match_info.csv")
+    all_files = glob.glob("../data/cs/csgo_match_info.csv")
     
     all_rows = []
 

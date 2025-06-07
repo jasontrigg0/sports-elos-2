@@ -46,7 +46,7 @@ def scrape_games(team_info):
         is_neutral = game.select('td[data-stat="game_location"]')[0].text == "N"
 
         opp_team = game.select('td[data-stat="opp_name"]')[0].text
-        opp_team = re.sub("\(\d+\)","",opp_team).strip()
+        opp_team = re.sub(r"\(\d+\)","",opp_team).strip()
         
         score = game.select('td[data-stat="pts"]')[0].text
         opp_score = game.select('td[data-stat="opp_pts"]')[0].text

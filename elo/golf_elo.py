@@ -8,10 +8,23 @@ import datetime
 def load_pga_data():
     matches = {}
 
-    for f in glob.glob("../../data-stories/src/llm_leaderboard/pga.csv"):
+    history_file = "../data/pga/history.csv"
+    
+    all_files = [history_file] + glob.glob("../data/pga/pga_*.csv")
+
+    tournaments_from_history_file = set()
+    
+    for f in all_files:
         reader = csv.DictReader(open(f))
 
         for row in reader:
+            #some tournaments may be covered in both history.csv and pga_{year}.csv
+            #in which case use history.csv which seems more reliable, see scraper for details
+            if f == history_file:
+                tournaments_from_history_file.add(row["tournament_id"])
+            elif row["tournament_id"] in tournaments_from_history_file:
+                continue
+        
             #only PGA events for now
             #Senior Tour isn't properly normalizing
             if row["tournament_id"][0] != "R": continue
@@ -134,12 +147,12 @@ if __name__ == "__main__":
         ],
         "elo_settings": {
             "default": {
-                "new_k_mult": 24,
-                "sigmoid_max": 10,
+                "new_k_mult": 28,
+                "sigmoid_max": 6,
                 "sigmoid_max_neg": 6,
                 "raw_to_elo_mult": 1,
                 "player": {
-                    "k": 0.045,
+                    "k": 0.018,
                     "update_max": 3,
                     "year_end_shrinkage_frac": 0.00,
                 }

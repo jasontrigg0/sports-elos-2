@@ -17,15 +17,15 @@ def scrape_games(year):
 
     for game in soup.select('tbody tr:not(.thead)'):
         game_url = game.select('td[data-stat="date_game"] a')[0]["href"]
-        date = re.findall("\d{4}-\d{2}-\d{2}",game_url)[0].replace("-","")
+        date = re.findall(r"\d{4}-\d{2}-\d{2}",game_url)[0].replace("-","")
 
         is_home = game.select('td[data-stat="game_location"]')[0].text == ""
         is_neutral = game.select('td[data-stat="game_location"]')[0].text == "N"
 
         winner_team = game.select('td[data-stat="winner_school_name"]')[0].text
-        winner_team = re.sub("\(\d+\)","",winner_team).strip()
+        winner_team = re.sub(r"\(\d+\)","",winner_team).strip()
         loser_team = game.select('td[data-stat="loser_school_name"]')[0].text
-        loser_team = re.sub("\(\d+\)","",loser_team).strip()
+        loser_team = re.sub(r"\(\d+\)","",loser_team).strip()
         
         winner_score = game.select('td[data-stat="winner_points"]')[0].text
         loser_score = game.select('td[data-stat="loser_points"]')[0].text
@@ -55,7 +55,8 @@ def scrape_games(year):
 
 
 if __name__ == "__main__":
-    for year in range(1869,2025):
+    # for year in range(1869,2025):
+    for year in range(2024,2025):
         print(year)
         with open(f"../data/cfb/cfb_{year}.csv","w") as f_out:
             writer = csv.DictWriter(f_out, fieldnames=["year","game_url","date","home_team","away_team","home_score","away_score","is_neutral"])

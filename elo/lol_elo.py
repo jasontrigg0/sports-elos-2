@@ -118,11 +118,11 @@ def event_to_league_name(event):
     league_name = None
     
     if ("Promotion" not in event and "Qualifier" not in event and "Expansion" not in event and "Pro-Am" not in event):
-        match = re.findall("^(.*) 20\d{2}",event)
+        match = re.findall(r"^(.*) 20\d{2}",event)
         if match:
             league_name = match[0]
 
-    if re.findall("^LJL 20\d{2} Academy League",event):
+    if re.findall(r"^LJL 20\d{2} Academy League",event):
         league_name = "LJL Academy"
 
     if re.findall("^Korea Regional Finals",event):

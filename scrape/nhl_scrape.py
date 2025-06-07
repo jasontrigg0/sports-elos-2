@@ -21,7 +21,7 @@ def scrape_games(url):
         
         date = game_link[0].text.replace("-","")
         game_url = game_link[0]["href"]
-        date = re.findall("\d{8}",game_url)[0]
+        date = re.findall(r"\d{8}",game_url)[0]
         
         home_team = game.select('td[data-stat="home_team_name"] a')[0]["href"]
         home_team = home_team.split("/")[2]

@@ -72,7 +72,7 @@ def get_fight_details(fight_url):
     info.append(outcome)
     info = dict(info)
     
-    match = re.findall("(\d+) - (\d+)",info["Details"])
+    match = re.findall(r"(\d+) - (\d+)",info["Details"])
     if match:
         if len(match) != 3:
             print(f"expected three judges but {len(match)} found. scores: {match}")
