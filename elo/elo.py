@@ -194,42 +194,44 @@ class Elo:
         }
 
         info = None
-        with open("output.csv","w") as f_out:
-            writer = csv.DictWriter(f_out, fieldnames=["yyyymmdd","player_id","player","elo"])
+
+        if self.print_elo_by_date:
+            writer = csv.DictWriter(open("output.csv","w"), fieldnames=["yyyymmdd","player_id","player","elo"])
             writer.writeheader()
-            for info, next_ in pairwise(self.all_match_info):
-                if info["type"] == "year_end":
-                    self.update_year_end()
+            
+        for info, next_ in pairwise(self.all_match_info):
+            if info["type"] == "year_end":
+                self.update_year_end()
+            else:
+                if info["type"] == "match_group":
+                    match_group = info
+                elif info["type"] == "match":
+                    match_group = {
+                        "type": "match_group",
+                        "yyyymmdd": info["yyyymmdd"],
+                        "event": info["event"],
+                        "matches": [info["results"]]
+                    }
                 else:
-                    if info["type"] == "match_group":
-                        match_group = info
-                    elif info["type"] == "match":
-                        match_group = {
-                            "type": "match_group",
-                            "yyyymmdd": info["yyyymmdd"],
-                            "event": info["event"],
-                            "matches": [info["results"]]
-                        }
-                    else:
-                        raise
+                    raise
 
-                    match_stats = self.update_elos_from_match_group(match_group, "main")
-                    
-                    if self.has_slow:
-                        self.update_elos_from_match_group(match_group, "slow")
+                match_stats = self.update_elos_from_match_group(match_group, "main")
 
-                    if self.print_elo_by_date: #TODO: fix
-                        if (next_ is None) or (info["yyyymmdd"] != next_["yyyymmdd"]):
-                            all_sorted_elos = self.get_sorted_active_elos(self.data["latest_match_date"])
-                            for x in all_sorted_elos["total"][:100]:
-                                writer.writerow({
-                                    "yyyymmdd": info["yyyymmdd"],
-                                    "player_id": x[0],
-                                    "player": x[1],
-                                    "elo": x[2],
-                                })
-                        
-                stats["err"] += match_stats["err"]
+                if self.has_slow:
+                    self.update_elos_from_match_group(match_group, "slow")
+
+                if self.print_elo_by_date: #TODO: fix
+                    if (next_ is None) or (info["yyyymmdd"] != next_["yyyymmdd"]):
+                        all_sorted_elos = self.get_sorted_active_elos(self.data["latest_match_date"])
+                        for x in all_sorted_elos["total"][:100]:
+                            writer.writerow({
+                                "yyyymmdd": info["yyyymmdd"],
+                                "player_id": x[0],
+                                "player": x[1],
+                                "elo": x[2],
+                            })
+
+            stats["err"] += match_stats["err"]
 
         if not info:
             raise Exception("No matches found")
