@@ -23,7 +23,6 @@ def scrape_games(year):
             if "(Spring)" in game.text: continue
             if "Preview" in game.text: continue
             
-            print(game.select("a"))
             away_team = game.select('a')[0]["href"].split("/")[2]
             home_team = game.select('a')[1]["href"].split("/")[2]
 
