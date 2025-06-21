@@ -14,92 +14,61 @@ def load_data():
 
     all_race_results = {}
 
-    def constructor_to_chassis_engine(constructor, year):
+    def preprocess_team_name(team_name):
         #https://en.wikipedia.org/wiki/1957_German_Grand_Prix
         #"To increase participation, the organizers opened the field to Formula 2 cars. The two races were run at the same time but the Formula 2 entries (shown in yellow) were not eligible for World Championship points and some sources do not consider these starts in career stats."
         #these are included for now, including this "Porsche (F2)" row
-        if constructor == "Porsche (F2)":
-            constructor = "Porsche"
+        if team_name == "Porsche (F2)":
+            team_name = "Porsche"
 
         #typos / inconsistencies
-        constructor = constructor.replace("Mclaren","McLaren")
-        constructor = constructor.replace("Iso Marlboro","Iso-Marlboro")
-        constructor = constructor.replace("Offerhauser", "Offenhauser")
+        team_name = team_name.replace("Mclaren","McLaren")
+        team_name = team_name.replace("Iso Marlboro","Iso-Marlboro")
+        team_name = team_name.replace("Offerhauser", "Offenhauser")
 
-        if constructor == "Frank Williams Racing Cars/Williams":
-            constructor = "Frank Williams Racing Ford"
+        if team_name == "Frank Williams Racing Cars/Williams":
+            team_name = "Frank Williams Racing Ford"
 
-        if constructor == "Wolf-Williams":
-            constructor = "Wolf-Williams Ford"
+        if team_name == "Wolf-Williams":
+            team_name = "Wolf-Williams Ford"
 
-        if constructor == "Maserati-Offenhauser":
-            constructor = "Maserati Offenhauser"
+        if team_name == "Maserati-Offenhauser":
+            team_name = "Maserati Offenhauser"
 
-        if constructor == "Thin Wall Ferrari": #special ferrari
-            constructor = "Ferrari"
+        if team_name == "Thin Wall Ferrari": #special ferrari
+            team_name = "Ferrari"
 
 
         #potential prefix issues
-        constructor = constructor.replace("Red Bull Racing", "Red Bull")
-        constructor = constructor.replace("Aston Martin Aramco", "Aston Martin")
-        constructor = constructor.replace("Alfa Romeo Racing", "Alfa Romeo")
-        
+        team_name = team_name.replace("Red Bull Racing", "Red Bull")
+        team_name = team_name.replace("Aston Martin Aramco", "Aston Martin")
+        team_name = team_name.replace("Alfa Romeo Racing", "Alfa Romeo")
+        return team_name
+
+    def split_team_name(team_name):
         chassis_constructors = ["McLaren", "Williams", "Lotus", "Sauber", "Kick Sauber", "Tyrrell", "Arrows", "Ferrari", "Alfa Romeo", "Red Bull", "RBR", "Aston Martin", "Mercedes-Benz", "Mercedes", "Matra", "March", "Renault", "Brabham", "Footwork", "Minardi", "Ligier", "Scuderia Toro Rosso", "STR", "Toro Rosso", "Benetton", "Jordan", "Force India", "BRM", "Lola", "Toyota", "Osella", "Cooper", "Surtees", "BAR", "Fittipaldi", "Shadow", "Haas", "Alpine", "Ensign", "ATS", "Honda", "Jaguar", "Prost", "Dallara", "Marussia", "Maserati", "Caterham", "HRT", "Zakspeed", "Toleman", "Hesketh", "Stewart", "Wolf", "Penske", "Super Aguri", "Racing Point", "Virgin", "Theodore", "Gordini", "Porsche", "AGS", "Larrousse", "RAM", "Leyton House", "Vanwall", "Eagle", "Forti", "Spirit", "Pacific", "MRT", "Rial", "Simtek", "Fondmetal", "MF1", "Spyker", "Brawn", "Connaught", "Onyx", "Parnelli", "Venturi", "Euro Brun", "HWM", "Simca-Gordini", "BRP", "Coloni", "Talbot-Lago", "Kurtis Kraft", "Hill", "Tecno", "Kuzma", "Phillips", "Stevens", "Pankratz", "Pawl", "Nichels", "Schroeder", "Bromme", "Klenk", "Lancia", "Scirocco", "Derrington-Francis", "De Tomaso", "Bellasi", "Merzario", "Martini", "Frank Williams Racing", "Lyncar", "Lambo", "Veritas", "Sherman", "Moore", "Deidt", "Hall", "Marchese", "Trevis", "Lesovsky", "Watson", "ERA", "Alta", "OSCA", "LEC", "Boro", "Kojima", "Iso-Marlboro", "Trojan", "Amon", "Token", "Behra-Porsche", "Epperly", "Meskowski", "Christensen", "Ewing", "Scarab", "JBW", "Frazer Nash", "AFM", "Aston Butterworth", "BMW", "AlphaTauri", "Langley", "Rae", "Olson", "Wetteroth", "Snowberger", "Adams", "Dunn", "Elder", "Sutton", "Tec-Mec", "Turner", "Del Roy", "EMW", "RB", "Shannon", "LDS", "Gilby", "Stebro", "Ferguson", "Rebaque", "Moda", "Emeryson", "ENB", "Bugatti", "Wolf-Williams", "Racing Bulls", "Protos", "Eifelland", "Politoys", "Connew"]
 
-        engine_constructors = ["Mercedes", "Renault", "Ferrari", "Honda", "Cosworth", "BMW", "Toyota", "Petronas", "Ford", "Lamborghini", "Yamaha", "Judd", "Porsche", "Ilmor", "Mugen Honda", "Hart", "Peugeot", "Mecachrome", "TAG", "Zakspeed", "Alfa Romeo", "Motori Moderni", "Matra", "BRM", "Pratt & Whitney", "Tecno", "Repco", "Maserati", "Climax", "ATS", "Serenissima", "Weslake", "OSCA", "Gordini", "Offenhauser", "Mercedes-Benz", "Alta", "Bristol", "Lea Francis", "Vanwall", "Lancia", "Talbot-Lago", "Veritas", "Novi", "Milano", "ERA", "Scarab", "Aston Martin", "Plate", "Kuchen", "Cummins", "Aston Butterworth", "JAP", "Jaguar", "Borgward", "EMW", "Bugatti"]
-        
-        engine = None
         for cc in chassis_constructors:
-            if constructor == cc:
-                chassis = cc
-                engine = cc
-            elif constructor.startswith(cc + " "):
-                chassis = cc
-                engine = constructor.split(cc,1)[1].strip()
+            if team_name == cc:
+                return {
+                    "chassis": cc,
+                    "engine": ""
+                }
+            elif team_name.startswith(cc + " "):
+                #if there chassis and engine constructors are different
+                #then both may be listed eg: "McLaren Mercedes" means
+                #chassis is McLaren and the engine is Mercedes
+                return {
+                    "chassis": cc,
+                    "engine": team_name.split(cc,1)[1].strip()
+                }
 
-        if not constructor:
-            chassis = ""
-            engine = ""
-                
-        if constructor and not engine:
-            print(constructor, year)
-            raise
+        print("chassis constructor not found")
+        print(team_name, year)
+        raise
 
-        engine_map = {
-            "BWT Mercedes": "Mercedes",
-            "Honda RBPT": "Honda",
-            "Acer": "Ferrari",
-            "Asiatech": "Peugeot", #bought the assets of Peugeot
-            "European": "Ford",
-            "Arrows": "Hart",
-            "Fondmetal": "Ford",
-            "Playlife": "Mecachrome",
-            "Supertec": "Mecachrome",
-            "Megatron": "BMW",
-            "Simca-Gordini": "Gordini",
-            "Castellotti": "Ferrari",
-        }
-        if engine == "TAG Heuer" and year in [2016,2017,2018]:
-            engine = "Renault"
-        if engine == "Toro Rosso" and year == 2017:
-            engine = "Renault"
-        if engine == "RBPT" and year == 2022:
-            engine = "Honda"
-        if engine == "Sauber" and year == 1993:
-            engine = "Ilmor"
-        if engine == "Osella" and year == 1988:
-            engine = "Alfa Romeo"
-        if engine == "Behra-Porsche" and year == 1960:
-            engine = "Porsche"
-        if engine == "Frazer Nash" and year == 1952:
-            engine = "Bristol"
-        
-        engine = engine_map.get(engine, engine)
-        
-        if engine and engine not in engine_constructors:
-            print(constructor, engine, year)
-            raise
-        
+    
+    def get_chassis(chassis, year):
         #working largely off of this
         #https://www.reddit.com/r/formula1/comments/lp0qru/a_timeline_of_every_constructor_in_formula_1/#lightbox
         if chassis == "Alfa Romeo" and year in [2019,2020,2021,2022,2023]:
@@ -113,7 +82,7 @@ def load_data():
             chassis = "Alpine"
         if chassis == "Lotus" and year in [2010,2011]:
             chassis = "Caterham"
-            
+
         chassis_map = {
             "Kick Sauber": "Sauber", #2024 - 2025
             "Mercedes-Benz": "Mercedes",
@@ -148,9 +117,89 @@ def load_data():
             "Virgin": "MRT", #2010 - 2011
             "Marussia": "MRT", #2012 - 2015
         }
-                
         chassis = chassis_map.get(chassis,chassis)
+        return chassis
+        
+    def get_engine(chassis, engine, year):
+        engine_constructors = ["Mercedes", "Renault", "Ferrari", "Honda", "Cosworth", "BMW", "Toyota", "Petronas", "Ford", "Lamborghini", "Yamaha", "Judd", "Porsche", "Ilmor", "Mugen Honda", "Hart", "Peugeot", "Mecachrome", "TAG", "Zakspeed", "Alfa Romeo", "Motori Moderni", "Matra", "BRM", "Pratt & Whitney", "Tecno", "Repco", "Maserati", "Climax", "ATS", "Serenissima", "Weslake", "OSCA", "Gordini", "Offenhauser", "Mercedes-Benz", "Alta", "Bristol", "Lea Francis", "Vanwall", "Lancia", "Talbot-Lago", "Veritas", "Novi", "Milano", "ERA", "Scarab", "Aston Martin", "Plate", "Kuchen", "Cummins", "Aston Butterworth", "JAP", "Jaguar", "Borgward", "EMW", "Bugatti"]
 
+        if engine == "":
+            if chassis in engine_constructors:
+                engine = chassis
+            elif chassis == "Arrows":
+                engine = "Hart"
+            elif chassis == "Simca-Gordini":
+                engine = "Gordini"
+
+        if chassis == "Toro Rosso" and year == 2017:
+            engine = "Renault"
+        if chassis == "Sauber" and year == 1993:
+            engine = "Ilmor"
+        if chassis == "Osella" and year == 1988:
+            engine = "Alfa Romeo"
+        if chassis == "Behra-Porsche" and year == 1960:
+            engine = "Porsche"
+        if chassis == "Frazer Nash" and year == 1952:
+            engine = "Bristol"
+        if chassis == "McLaren" and year == 2025:
+            engine = "Mercedes"
+        if chassis == "Red Bull" and year == 2025:
+            engine = "Honda"
+        if chassis == "Racing Bulls" and year == 2025:
+            engine = "Honda"
+        if chassis == "Williams" and year == 2025:
+            engine = "Mercedes"
+        if chassis == "Kick Sauber" and year == 2025:
+            engine = "Ferrari"
+        if chassis == "Haas" and year == 2025:
+            engine = "Ferrari"
+        if chassis == "Alpine" and year == 2025:
+            engine = "Renault"
+        if chassis == "Aston Martin" and year == 2025:
+            engine = "Mercedes"
+        
+        engine_map = {
+            "BWT Mercedes": "Mercedes",
+            "Honda RBPT": "Honda",
+            "Acer": "Ferrari",
+            "Asiatech": "Peugeot", #bought the assets of Peugeot
+            "European": "Ford",
+            "Fondmetal": "Ford",
+            "Playlife": "Mecachrome",
+            "Supertec": "Mecachrome",
+            "Megatron": "BMW",
+            "Castellotti": "Ferrari",
+        }
+        if engine == "RBPT" and year == 2022:
+            #"Red Bull-branded Honda engines"
+            engine = "Honda"
+        if engine == "TAG Heuer" and year in [2016,2017,2018]:
+            #Red Bull have announced they will continue to use Renault engines
+            #next season, but with the power unit branded TAG Heuer, after the
+            #team's new timing partner
+            engine = "Renault"
+            
+        engine = engine_map.get(engine, engine)
+        
+        if engine not in engine_constructors:
+            print(chassis, engine, year)
+            raise
+        
+        return engine
+
+    def team_name_to_chassis_engine(team_name, year):
+        if team_name == "":
+            return {
+                "chassis": "",
+                "engine": ""
+            }
+        team_name = preprocess_team_name(team_name)
+        raw_chassis = split_team_name(team_name)["chassis"]
+        raw_engine = split_team_name(team_name)["engine"]
+
+        chassis = get_chassis(raw_chassis, year)
+        engine = get_engine(raw_chassis, raw_engine, year)
+        
         return {
             "chassis": chassis,
             "engine": engine
@@ -159,16 +208,16 @@ def load_data():
     for row in all_rows:
         year = int(row["year"])
         constructor = row["constructor"].strip()
-        row["chassis"] = constructor_to_chassis_engine(constructor,year)["chassis"]
-        row["engine"] = constructor_to_chassis_engine(constructor,year)["engine"]
+        row["chassis"] = team_name_to_chassis_engine(constructor,year)["chassis"]
+        row["engine"] = team_name_to_chassis_engine(constructor,year)["engine"]
         all_race_results.setdefault(row["event_id"],[]).append(row)
-        
+
     league = "f1"
     #add one match for each pair of drivers in each race
     for race in all_race_results:
         all_race_matches = []
         
-        rows = [x for x in all_race_results[race] if x["position"] not in ["NC","DQ","EX","DNS"]]
+        rows = [x for x in all_race_results[race] if x["position"] not in ["NC","DQ","EX","DNS"] and x["time"] != "DNF"]
         for i in range(len(rows)):
             r1 = rows[i]
             for j in range(i+1,len(rows)):
@@ -259,19 +308,19 @@ if __name__ == "__main__":
         ],
         "elo_settings": {
             "default": {
-                "new_k_mult": 20,
+                "new_k_mult": 26,
                 "player": {
-                    "k": 7.5,
-                    "update_max": 8,
+                    "k": 11,
+                    "update_max": 16,
                     "year_end_shrinkage_frac": 0.20,
                 },
                 "chassis": {
-                    "k": 3,
-                    "update_max": 3,
+                    "k": 4.5,
+                    "update_max": 6,
                     "year_end_shrinkage_frac": 0.10,
                 },
                 "engine": {
-                    "k": 1.75,
+                    "k": 2.5,
                     "update_max": 3,
                     "year_end_shrinkage_frac": 0.40,
                 }

@@ -14,10 +14,10 @@ def get_all_events(year):
     response = requests.get(url, headers=headers)
 
     for l in response.text.split("\n"):
-        if re.findall("^2:",l):
-            l = l.replace("2:","")
+        if re.findall("^33:",l):
+            l = re.sub(r"^.*?\[","[",l)
             data = json.loads(l)
-            for race in data[1][0][3]["children"][2][3]["content"]:
+            for race in data[3]["children"][0][3]["dropdownData"]:
                 yield {
                     "id": race["value"],
                     "name": race["text"],
@@ -50,7 +50,7 @@ def constructor_to_id(constructor):
     return mappings.get(constructor, constructor)
                 
 def get_event_results(year, event_id, event_name):
-    url = f'https://www.formula1.com/en/results/{year}/races/{event_id}/{event_name}/race-result?_rsc=m68ps'
+    url = f'https://www.formula1.com/en/results/{year}/races/{event_id}/{event_name}/race-result?_rsc=cy697'
     
     headers = {
         "rsc": "1",
@@ -60,28 +60,27 @@ def get_event_results(year, event_id, event_name):
     response = requests.get(url, headers=headers)
 
     for l in response.text.split("\n"):
-        if "Standings" in l:
-            l = l.replace("2:","")
+        if re.findall("^2:",l):
+            l = re.sub("^2:","",l)
             data = json.loads(l)
-            info = data[1][1][3]["children"][3]["children"]
-            date_str = info[1][3]["children"][0][3]["children"]
+            date_str = data[3]["children"][1][3]["children"][0][2][3]["children"][3]["children"][3]["children"][0][3]["children"]
             if "-" in date_str:
                 date_str = date_str.split("-")[1].strip()
             date = datetime.datetime.strptime(date_str, "%d %b %Y").strftime("%Y%m%d")
-            
-            results = info[2][3]["children"][1][3]["children"]
-            if type(results) is str and "Results for this session" in str(results) and "available yet." in str(results):
+
+            results = data[3]["children"][1][3]["children"][1][3]["children"][3]["children"][3]["children"][3]["children"]
+            if "No results available" in json.dumps(results):
                 print(f"No results for {event_name}, skipping...")
                 return
             rows = results[3]["children"][1][3]["children"]
             for r in rows:
                 cols = r[3]["children"]
-                position = cols[0][3]["children"][3]["children"]
-                first_name = cols[2][3]["children"][3]["children"][0][3]["children"].strip()
-                last_name = cols[2][3]["children"][3]["children"][2][3]["children"].strip()
-                driver_id = cols[2][3]["children"][3]["children"][3][3]["children"]
-                constructor = cols[3][3]["children"][3]["children"][0]
-                time = cols[5][3]["children"][3]["children"]
+                position = cols[0][3]["children"][3]["children"][0]
+                first_name = cols[2][3]["children"][3]["children"][3]["children"][1][3]["children"][0][3]["children"].strip()
+                last_name = cols[2][3]["children"][3]["children"][3]["children"][1][3]["children"][2][3]["children"].strip()
+                driver_id = cols[2][3]["children"][3]["children"][3]["children"][1][3]["children"][3][3]["children"].strip()
+                constructor = cols[3][3]["children"][3]["children"][3]["children"][1]
+                time = cols[5][3]["children"][3]["children"][0]
                 yield {
                     "year": year,
                     "date": date,
