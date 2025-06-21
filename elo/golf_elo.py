@@ -55,7 +55,7 @@ def load_pga_data():
 
 def load_liv_data(fieldname):
     liv_owgr_id_map = {}
-    for row in csv.DictReader(open("../data/liv_owgr_map.csv")):
+    for row in csv.DictReader(open("../scrape/liv_owgr_map.csv")):
         liv_owgr_id_map[row["liv_id"]] = row[fieldname]
 
     matches = {}
