@@ -25,12 +25,11 @@ def get_all_games(cutoff_year):
         rows = [x["title"] for x in site.api('cargoquery', **args)["cargoquery"]]
         past_cutoff = any(not filter_fn(x) for x in rows)
         rows = [x for x in rows if filter_fn(x)]
-        
+
         page += 1
 
         for r in rows:
             yield r
-            writer.writerow(r)
 
         if past_cutoff or len(rows) == 0:
             break
