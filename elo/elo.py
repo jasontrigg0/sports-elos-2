@@ -357,6 +357,8 @@ class Elo:
             if comp["event_subtype"]:
                 self.data[name].setdefault(player_id,{}).setdefault(value,starting_elo)
             else:
+                if res.get("league_elo_diff") and comp["name"] == "league":
+                    starting_elo += res.get("league_elo_diff")
                 self.data[name].setdefault(value,starting_elo)
 
             if self.has_slow and name == self.primary_component["name"]:
@@ -516,11 +518,6 @@ class Elo:
         else:
             raise
 
-        # leagues = set([x["league_id"] for x in match_results])
-        # if len(leagues) > 1 and "LFL" in leagues:
-        #     print(match_results)
-        #     raise
-        
         #for each contestant the difference between their skill and the opponent's
         sum_raw = sum([skill_fn(x) for x in match_results])
         player_cnt = len(match_results)
@@ -533,6 +530,13 @@ class Elo:
 
             total_raw = cur_raw + avg_opp_raw
 
+            # leagues = set([x["league_id"] for x in match_results])
+            # if len(leagues) > 1 and "LFL" in leagues and res == match_results[0]:
+            #     print(res, cur_raw, avg_opp_raw)
+            # league_types = set([x["league_type_id"] for x in match_results])
+            # if len(league_types) > 1 and "unknown" not in league_types:
+            #     print(league_types, res, cur_raw, avg_opp_raw)
+            
             #record best ever matches as measured by the strength of the weaker player
             if (version == "main") and res.get("score") and res["score"] > 0:
                 info = self.get_result_summary(res)

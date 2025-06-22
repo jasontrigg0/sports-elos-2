@@ -5,12 +5,13 @@ import csv
 import re
 import glob
 
-def get_league_type(league):
-    if league in ["LCK","LPL","LCS","LEC","LTA"]:
-        return "major"
+def get_league_elo_diff(league):
+    if league in ["LFL", "LVP SL", "Liga Nexo", "TCL", "LIT", "Arabian League", "NLC", "Road Of Legends", "PRM 1st Division", "LPLOL", "EBL", "HLL", "Rift Legends", "Hitpoint Masters", "Belgian League", "Dutch League", "CBLOL Academy", "NACL"]:
+        return -400
+    elif league in ["PRM 2nd Division", "UKLC", "NLC 2nd Division", "Arabian League 2nd Division", "TCL Division 2", "LFL Division 2", "LVP SL 2nd Division","HCC","unknown"]:
+        return -800
     else:
-        return "minor"
-
+        return 0
 
 RECOGNIZED_LEAGUES = [
     "LDL",
@@ -75,7 +76,8 @@ RECOGNIZED_LEAGUES = [
     "Liga Nexo", #spanish third league
     "LCK AS", #parent: LCK CL
     "LST", #philippines and thailand
-    "LTA",
+    "LTA North",
+    "LTA South",
 ]
 
 def team_name_to_id(name):
@@ -137,39 +139,45 @@ def event_to_league_name(event):
     return league_name
 
 
-def league_name_to_id(league_name):
-   name_to_id = {
-       "NA LCS": "LCS",
-       "EU LCS": "LEC",
-       "LSPL": "LDL",
-       "NLB": "LCK CL",
-       "CK": "LCK CL",
-       "NACS": "NACL",
-       "NA Academy": "NACL",
-       "Champions": "LCK",
-       "PRM Pro Division": "PRM 1st Division",
-       "PG Nationals": "LIT",
-       "Ultraliga": "Rift Legends",
-       "LVP SLO": "LVP SL",
-       "VDL": "VL",
-       "LHE": "LH",
-       "LAS": "CLS",
-       "TPL": "TCL Division 2",
-       "TCS": "TCL Division 2",
-       "Turkey Academy": "TCL Division 2",
-       "OPL": "LCO",
-       "Elite Series": "Road Of Legends",
-       "BRCC": "CBLOL Academy",
-       "FCS": "EBL",
-       "UPL": "ACL",
-       "GL2D": "HCC",
-       "GLWL": "HCC",
-       "GLL": "HLL",
-   }
- 
-   league_id = name_to_id.get(league_name,league_name)
+def league_name_to_id(league_name, year):
+    if year >= "2025" and league_name == "SL":
+        return "LVP SL"
+    
+    name_to_id = {
+        "NA LCS": "LCS",
+        "LTA North": "LCS",
+        "EU LCS": "LEC",
+        "LSPL": "LDL",
+        "NLB": "LCK CL",
+        "CK": "LCK CL",
+        "NACS": "NACL",
+        "NA Academy": "NACL",
+        "Champions": "LCK",
+        "PRM Pro Division": "PRM 1st Division",
+        "PG Nationals": "LIT",
+        "Ultraliga": "Rift Legends",
+        "LVP SLO": "LVP SL",
+        "VDL": "VL",
+        "LHE": "LH",
+        "LAS": "CLS",
+        "TPL": "TCL Division 2",
+        "TCS": "TCL Division 2",
+        "Turkey Academy": "TCL Division 2",
+        "OPL": "LCO",
+        "Elite Series": "Road Of Legends",
+        "LTA South": "CBLOL",
+        "BRCC": "CBLOL Academy",
+        "CD": "CBLOL Academy",
+        "FCS": "EBL",
+        "UPL": "ACL",
+        "GL2D": "HCC",
+        "GLWL": "HCC",
+        "GLL": "HLL",
+    }
+   
+    league_id = name_to_id.get(league_name,league_name)
 
-   return league_id
+    return league_id
 
 def load_data():
     all_rows = []
@@ -184,6 +192,9 @@ def load_data():
         
     team_to_league_name = {}
     for row in all_rows:
+        #there are some matches between national teams and regular teams which mixes things up
+        if "National Team" in row["Team1"] or "National Team" in row["Team2"]: continue
+        
         team1_name = row["Team1"]
         team1_id = team_name_to_id(team1_name)
 
@@ -193,21 +204,29 @@ def load_data():
         winner_name = row["WinTeam"]
         winner_id = team_name_to_id(winner_name)
 
+        yyyymmdd = get_date(row)
+        year = yyyymmdd[:4]
+
         league_name = event_to_league_name(row["Tournament"])
-        league_id = league_name_to_id(league_name)
+        league_id = league_name_to_id(league_name, year)
 
         if league_id in RECOGNIZED_LEAGUES:
             team_to_league_name[team1_id] = league_name
             team_to_league_name[team2_id] = league_name
 
         team1_league_name = team_to_league_name.get(team1_id, "unknown")
-        team1_league_id = league_name_to_id(team1_league_name)
+        team1_league_id = league_name_to_id(team1_league_name, year)
 
         team2_league_name = team_to_league_name.get(team2_id, "unknown")
-        team2_league_id = league_name_to_id(team2_league_name)
-        
-        yyyymmdd = get_date(row)
+        team2_league_id = league_name_to_id(team2_league_name, year)
 
+        if team1_league_name == "unknown":
+            team1_league_name = team2_league_name
+            team1_league_id = team2_league_id
+        if team2_league_name == "unknown":
+            team2_league_name = team1_league_name
+            team2_league_id = team1_league_id
+        
         yield {
             "type": "match",
             "yyyymmdd": yyyymmdd,
@@ -218,8 +237,7 @@ def load_data():
                     "player_name": team1_name,
                     "league_id": team1_league_id,
                     "league_name": team1_league_name,
-                    "league_type_id": get_league_type(team1_league_id),
-                    "league_type_name": get_league_type(team1_league_id),
+                    "league_elo_diff": get_league_elo_diff(team1_league_id),
                     "opp_id": team2_id,
                     "opp_name": team2_name,
                     "is_home": "NEUTRAL",
@@ -231,8 +249,7 @@ def load_data():
                     "player_name": team2_name,
                     "league_id": team2_league_id,
                     "league_name": team2_league_name,
-                    "league_type_id": get_league_type(team2_league_id),
-                    "league_type_name": get_league_type(team2_league_id),
+                    "league_elo_diff": get_league_elo_diff(team2_league_id),
                     "opp_id": team1_id,
                     "opp_name": team1_name,
                     "is_home": "NEUTRAL",
@@ -291,13 +308,6 @@ if __name__ == "__main__":
                 "external_id": "league_id",
                 "primary": False,
                 "event_subtype": False,
-            },
-            {
-                "name": "league_type",
-                "external_name": "league_type_name",
-                "external_id": "league_type_id",
-                "primary": False,
-                "event_subtype": False,
             }
         ],
         "elo_settings": {
@@ -312,12 +322,7 @@ if __name__ == "__main__":
                     "k": 15,
                     "update_max": 1000,
                     "year_end_shrinkage_frac": 0.05,
-                },
-                "league_type": {
-                    "k": 0,
-                    "update_max": 1000,
-                    "year_end_shrinkage_frac": 0.05,
-                },
+                }
             }
         },
         "normalize": True,
