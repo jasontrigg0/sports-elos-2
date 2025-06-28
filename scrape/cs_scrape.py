@@ -55,7 +55,7 @@ def get_stats_info(soup):
         map_name = map_info[map_id]
         for side in ["tstats","ctstats"]:
             for row in soup.select("div.matchstats")[0].find_all("div",id=f"{map_id}-content")[0].select(f"table.{side} tr"):
-                if "header-row" in row.attrs["class"]:
+                if "header-row" in row.attrs.get("class",[]):
                     team = row.select("td.players a")[0].text
                     continue
                 player = row.select("td.players a")[0]["href"]
