@@ -6,10 +6,10 @@ import re
 import glob
 
 def get_league_elo_diff(league):
-    if league in ["LFL", "LVP SL", "Liga Nexo", "TCL", "LIT", "Arabian League", "NLC", "Road Of Legends", "PRM 1st Division", "LPLOL", "EBL", "HLL", "Rift Legends", "Hitpoint Masters", "Belgian League", "Dutch League", "CBLOL Academy", "NACL"]:
-        return -400
-    elif league in ["PRM 2nd Division", "UKLC", "NLC 2nd Division", "Arabian League 2nd Division", "TCL Division 2", "LFL Division 2", "LVP SL 2nd Division","HCC","unknown"]:
-        return -800
+    if league in ["LFL", "LVP SL", "Liga Nexo", "TCL (ERL)", "LIT", "Arabian League", "NLC", "Road Of Legends", "PRM 1st Division", "LPLOL", "EBL", "HLL", "Rift Legends", "Hitpoint Masters", "Belgian League", "Dutch League", "CBLOL Academy", "NACL"]:
+        return -500
+    elif league in ["PRM 2nd Division", "UKLC", "NLC 2nd Division", "Arabian League 2nd Division", "TCL Division 2", "LFL Division 2", "LVP SL 2nd Division","HCC"]:
+        return -1000
     else:
         return 0
 
@@ -18,6 +18,7 @@ RECOGNIZED_LEAGUES = [
     "LPL",
     "LCK",
     "TCL",
+    "TCL (ERL)",
     "VCS",
     "LCS",
     "LEC",
@@ -80,10 +81,15 @@ RECOGNIZED_LEAGUES = [
     "LTA South",
 ]
 
-def team_name_to_id(name):
+def team_name_to_id(name, year):
+    if year == "2013" and name == "SK Telecom T1":
+        return "SK Telecom T1 K"
+    
     name_to_id = {
         "DAMWON Gaming": "Dplus KIA",
         "DWG KIA": "Dplus KIA",
+        "SK Telecom T1 1": "SK Telecom T1 S",
+        "SK Telecom T1 2": "SK Telecom T1 K",
         "SK Telecom T1": "T1",
         "Vici Gaming": "Rare Atom",
         "Incredible Miracle": "DRX",
@@ -142,6 +148,8 @@ def event_to_league_name(event):
 def league_name_to_id(league_name, year):
     if year >= "2025" and league_name == "SL":
         return "LVP SL"
+    if year >= "2023" and league_name == "TCL":
+        return "TCL (ERL)"
     
     name_to_id = {
         "NA LCS": "LCS",
@@ -195,17 +203,17 @@ def load_data():
         #there are some matches between national teams and regular teams which mixes things up
         if "National Team" in row["Team1"] or "National Team" in row["Team2"]: continue
         
-        team1_name = row["Team1"]
-        team1_id = team_name_to_id(team1_name)
-
-        team2_name = row["Team2"]
-        team2_id = team_name_to_id(team2_name)
-
-        winner_name = row["WinTeam"]
-        winner_id = team_name_to_id(winner_name)
-
         yyyymmdd = get_date(row)
         year = yyyymmdd[:4]
+
+        team1_name = row["Team1"]
+        team1_id = team_name_to_id(team1_name, year)
+
+        team2_name = row["Team2"]
+        team2_id = team_name_to_id(team2_name, year)
+
+        winner_name = row["WinTeam"]
+        winner_id = team_name_to_id(winner_name, year)
 
         league_name = event_to_league_name(row["Tournament"])
         league_id = league_name_to_id(league_name, year)
@@ -220,12 +228,12 @@ def load_data():
         team2_league_name = team_to_league_name.get(team2_id, "unknown")
         team2_league_id = league_name_to_id(team2_league_name, year)
 
-        if team1_league_name == "unknown":
-            team1_league_name = team2_league_name
-            team1_league_id = team2_league_id
-        if team2_league_name == "unknown":
-            team2_league_name = team1_league_name
-            team2_league_id = team1_league_id
+        # if team1_league_name == "unknown":
+        #     team1_league_name = team2_league_name
+        #     team1_league_id = team2_league_id
+        # if team2_league_name == "unknown":
+        #     team2_league_name = team1_league_name
+        #     team2_league_id = team1_league_id
         
         yield {
             "type": "match",
@@ -261,7 +269,7 @@ def load_data():
     
 if __name__ == "__main__":
     all_match_data = sorted(list(load_data()),key=lambda x: x["yyyymmdd"])
-    #all_match_data = [x for x in all_match_data if x["yyyymmdd"] < "20170601"]
+    #all_match_data = [x for x in all_match_data if x["yyyymmdd"] < "20131001"]
 
     def get_cutoff(year):
         all_year_ends = {
