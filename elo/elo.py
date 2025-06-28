@@ -365,7 +365,7 @@ class Elo:
                 self.data["_slow"].setdefault(value,starting_elo)
                 
             #if changing leagues then update elos accordingly
-            if name == "league" and prior_value and value != prior_value and prior_value != "unknown":
+            if name == "league" and prior_value and value != prior_value:
                 # print(f"league change! {player}, {prior_value}, {value}")
                 if self.hard_coded_league_elos:
                     if self.hard_coded_league_elos[prior_value] is not None and self.hard_coded_league_elos[value] is not None:
