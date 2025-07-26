@@ -33,6 +33,7 @@ def load_data(complex_score = False):
                 "DQ": 0.01,
                 "Other": 0.01,
                 "M-DEC": 0,
+                "Overturned": 0,
             }[row["method"]]
             
             score1 = score
