@@ -118,6 +118,7 @@ def team_name_to_id(name, year):
         "Fredit BRION": "OKSavingsBank BRION",
         "BRION": "OKSavingsBank BRION",
         "MAD Lions": "MAD Lions KOI",
+        "AG.AL": "Anyone's Legend",
     }
 
     return name_to_id.get(name, name)
@@ -269,7 +270,7 @@ def load_data():
     
 if __name__ == "__main__":
     all_match_data = sorted(list(load_data()),key=lambda x: x["yyyymmdd"])
-    #all_match_data = [x for x in all_match_data if x["yyyymmdd"] < "20131001"]
+    #all_match_data = [x for x in all_match_data if x["yyyymmdd"] < "20250721"]
 
     def get_cutoff(year):
         all_year_ends = {
