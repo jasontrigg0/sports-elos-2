@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 import time
+import datetime
 
 REQUEST_HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:72.0) Gecko/20100101 Firefox/72.0"
@@ -38,6 +39,9 @@ def scrape_games(year):
         
         game_url = game.select('td[data-stat="boxscore_word"] a')[0]["href"]
         date = game_url.split("/")[2][:8]
+
+        if datetime.datetime.strptime(date, "%Y%m%d").date() >= datetime.date.today():
+            continue
 
         home_team  = loser if location == "@" else winner
         away_team  = winner  if location == "@" else loser

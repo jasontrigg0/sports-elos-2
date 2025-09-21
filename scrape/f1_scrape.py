@@ -14,7 +14,13 @@ def get_all_events(year):
     response = requests.get(url, headers=headers)
 
     for l in response.text.split("\n"):
-        if re.findall("^33:",l):
+        prefix = "2b"
+        if "children" in l and "dropdownData" in l:
+            line_prefix = l.split(":")[0]
+            if line_prefix != prefix:
+                print("incorrect prefix")
+                raise
+        if re.findall(f"^{prefix}:",l):
             l = re.sub(r"^.*?\[","[",l)
             data = json.loads(l)
             for race in data[3]["children"][0][3]["dropdownData"]:

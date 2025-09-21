@@ -270,7 +270,7 @@ def load_data():
     
 if __name__ == "__main__":
     all_match_data = sorted(list(load_data()),key=lambda x: x["yyyymmdd"])
-    #all_match_data = [x for x in all_match_data if x["yyyymmdd"] < "20250721"]
+    #all_match_data = [x for x in all_match_data if x["yyyymmdd"] < "20231001"]
 
     def get_cutoff(year):
         all_year_ends = {

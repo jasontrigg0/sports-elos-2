@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import time
 import re
 import csv
+import datetime
 
 REQUEST_HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:72.0) Gecko/20100101 Firefox/72.0"
@@ -18,6 +19,9 @@ def scrape_games(year):
     for game in soup.select('tbody tr:not(.thead)'):
         game_url = game.select('td[data-stat="date_game"] a')[0]["href"]
         date = re.findall(r"\d{4}-\d{2}-\d{2}",game_url)[0].replace("-","")
+
+        if datetime.datetime.strptime(date, "%Y%m%d").date() >= datetime.date.today():
+            continue
 
         is_home = game.select('td[data-stat="game_location"]')[0].text == ""
         is_neutral = game.select('td[data-stat="game_location"]')[0].text == "N"
@@ -38,6 +42,7 @@ def scrape_games(year):
         notes = game.select('td[data-stat="notes"]')[0].text
         
         if (not home_score and not away_score and "Cancelled" in notes): continue
+        if (not home_score and not away_score): continue
         
         if (not home_score or not away_score):
             print(game)
