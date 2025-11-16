@@ -22,7 +22,7 @@ def scrape_games(year):
 
     soup = BeautifulSoup(html, features="lxml")
     output = []
-    for game in soup.select('tbody tr:not(.thead)'):
+    for game in soup.select('div#all_games tbody tr:not(.thead)'):
         if game.select('td[data-stat="game_date"]')[0].text == "Playoffs": continue
         
         winner_url = game.select('td[data-stat="winner"] a')[0]["href"]

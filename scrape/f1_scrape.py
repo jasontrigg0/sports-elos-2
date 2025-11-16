@@ -14,11 +14,12 @@ def get_all_events(year):
     response = requests.get(url, headers=headers)
 
     for l in response.text.split("\n"):
-        prefix = "2b"
+        prefix = "29"
         if "children" in l and "dropdownData" in l:
             line_prefix = l.split(":")[0]
             if line_prefix != prefix:
                 print("incorrect prefix")
+                print(line_prefix, prefix)
                 raise
         if re.findall(f"^{prefix}:",l):
             l = re.sub(r"^.*?\[","[",l)
@@ -74,19 +75,19 @@ def get_event_results(year, event_id, event_name):
                 date_str = date_str.split("-")[1].strip()
             date = datetime.datetime.strptime(date_str, "%d %b %Y").strftime("%Y%m%d")
 
-            results = data[3]["children"][1][3]["children"][1][3]["children"][3]["children"][3]["children"][3]["children"]
-            if "No results available" in json.dumps(results):
-                print(f"No results for {event_name}, skipping...")
-                return
-            rows = results[3]["children"][1][3]["children"]
+            # results = data[3]["children"][1][3]["children"][1][3]["children"][3]["children"][3]["children"][3]["children"]
+            # if "No results available" in json.dumps(results):
+            #     print(f"No results for {event_name}, skipping...")
+            #     return
+            # rows = results[3]["children"][1][3]["children"]
+            rows = data[3]["children"][1][3]["children"][1][3]["children"][3]["children"][3]["children"][3]["rows"]
             for r in rows:
-                cols = r[3]["children"]
-                position = cols[0][3]["children"][3]["children"][0]
-                first_name = cols[2][3]["children"][3]["children"][3]["children"][1][3]["children"][0][3]["children"].strip()
-                last_name = cols[2][3]["children"][3]["children"][3]["children"][1][3]["children"][2][3]["children"].strip()
-                driver_id = cols[2][3]["children"][3]["children"][3]["children"][1][3]["children"][3][3]["children"].strip()
-                constructor = cols[3][3]["children"][3]["children"][3]["children"][1]
-                time = cols[5][3]["children"][3]["children"][0]
+                position = r[0]["content"][0]
+                first_name = r[2]["content"][3]["children"][1][3]["children"][0][3]["children"]
+                last_name = r[2]["content"][3]["children"][1][3]["children"][2][3]["children"]
+                driver_id = r[2]["content"][3]["children"][1][3]["children"][3][3]["children"].strip()
+                constructor = r[3]["content"][3]["children"][1]
+                time = r[5]["content"][0]
                 yield {
                     "year": year,
                     "date": date,
