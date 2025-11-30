@@ -13,18 +13,20 @@ def get_all_events(year):
 
     response = requests.get(url, headers=headers)
 
+    
+    prefix = "2b"
     for l in response.text.split("\n"):
-        prefix = "29"
         if "children" in l and "dropdownData" in l:
             line_prefix = l.split(":")[0]
             if line_prefix != prefix:
                 print("incorrect prefix")
                 print(line_prefix, prefix)
                 raise
+    for l in response.text.split("\n"):
         if re.findall(f"^{prefix}:",l):
             l = re.sub(r"^.*?\[","[",l)
             data = json.loads(l)
-            for race in data[3]["children"][0][3]["dropdownData"]:
+            for race in data[1][3]["children"][0][3]["dropdownData"]:
                 yield {
                     "id": race["value"],
                     "name": race["text"],
@@ -70,7 +72,7 @@ def get_event_results(year, event_id, event_name):
         if re.findall("^2:",l):
             l = re.sub("^2:","",l)
             data = json.loads(l)
-            date_str = data[3]["children"][1][3]["children"][0][2][3]["children"][3]["children"][3]["children"][0][3]["children"]
+            date_str = data[1][3]["children"][1][3]["children"][0][2][3]["children"][3]["children"][3]["children"][0][3]["children"]
             if "-" in date_str:
                 date_str = date_str.split("-")[1].strip()
             date = datetime.datetime.strptime(date_str, "%d %b %Y").strftime("%Y%m%d")
@@ -80,7 +82,7 @@ def get_event_results(year, event_id, event_name):
             #     print(f"No results for {event_name}, skipping...")
             #     return
             # rows = results[3]["children"][1][3]["children"]
-            rows = data[3]["children"][1][3]["children"][1][3]["children"][3]["children"][3]["children"][3]["rows"]
+            rows = data[1][3]["children"][1][3]["children"][1][3]["children"][3]["children"][3]["children"][3]["rows"]
             for r in rows:
                 position = r[0]["content"][0]
                 first_name = r[2]["content"][3]["children"][1][3]["children"][0][3]["children"]
