@@ -8,6 +8,15 @@ import csv
 
 def get_all_games(cutoff_year):
     site = mwclient.Site('lol.fandom.com', path='/')
+
+    MW_USERNAME="USERNAME_GOES_HERE"
+    MW_PASSWORD="PASSWORD_GOES_HERE"
+    
+    site.login(
+        username=MW_USERNAME,
+        password=MW_PASSWORD
+    )
+    
     limit = 500 #max 500
     page = 0
     while True:
@@ -21,7 +30,6 @@ def get_all_games(cutoff_year):
         }
 
         filter_fn = lambda x: x["DateTime UTC"][:4] >= str(cutoff_year)
-        
         rows = [x["title"] for x in site.api('cargoquery', **args)["cargoquery"]]
         past_cutoff = any(not filter_fn(x) for x in rows)
         rows = [x for x in rows if filter_fn(x)]
