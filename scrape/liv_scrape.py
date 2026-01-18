@@ -64,7 +64,7 @@ def get_all_events(year):
             
 if __name__ == "__main__":
     # for year in range(2022, 2026):
-    for year in range(2025, 2026):
+    for year in range(2026, 2027):
         print(year)
         writer = csv.DictWriter(open(f"../data/liv/liv_{year}.csv",'w'),fieldnames=["player_id", "player_name", "event_id", "event_name", "start_date", "round", "score"])
         writer.writeheader()

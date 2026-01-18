@@ -288,7 +288,8 @@ if __name__ == "__main__":
             "2022": "1106",
             "2023": "1119",
             "2024": "1102",
-            "2025": "1201", #placeholder
+            "2025": "1109",
+            "2026": "1201", #placeholder
         }
         if year > max(all_year_ends.keys()):
             print(f"need to add new year end for {year}")

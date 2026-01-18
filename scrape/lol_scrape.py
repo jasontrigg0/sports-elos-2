@@ -9,8 +9,8 @@ import csv
 def get_all_games(cutoff_year):
     site = mwclient.Site('lol.fandom.com', path='/')
 
-    MW_USERNAME="USERNAME_GOES_HERE"
-    MW_PASSWORD="PASSWORD_GOES_HERE"
+    MW_USERNAME="Jasontrigg0@jasontrigg0"
+    MW_PASSWORD="6vlf5nbqo530tfv4in4osq8r0g7tf047"
     
     site.login(
         username=MW_USERNAME,
@@ -46,7 +46,7 @@ def get_all_games(cutoff_year):
 if __name__ == "__main__":
     #run with cutoff_year = 0 to pull all history
     #or with cutoff_year = year_to_scrape to pull only the current year
-    cutoff_year = 2025
+    cutoff_year = 2026
 
     year_to_writer = {}
     for game in get_all_games(cutoff_year):

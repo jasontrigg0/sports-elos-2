@@ -104,7 +104,7 @@ def get_event_results(year, event_id, event_name):
 
 if __name__ == "__main__":
     # for year in range(1950, 2026):
-    for year in range(2025, 2026):
+    for year in range(2026, 2027):
         print(year)
         with open(f"../data/f1/f1_{year}.csv","w") as f_out:
             writer = csv.DictWriter(f_out, fieldnames=["year","date","event_id","event_name","position","driver","constructor","time"])

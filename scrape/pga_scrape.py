@@ -311,5 +311,5 @@ if __name__ == "__main__":
     #when refreshing the current year pull by tournament
 
     #all_player_history()
-    scrape_year(2025)
+    scrape_year(2026)
 

@@ -136,7 +136,7 @@ def get_fight_details(fight_url):
 if __name__ == "__main__":
     #run with cutoff_year = 0 to pull all history
     #or with cutoff_year = year_to_scrape to pull only the current year
-    cutoff_year = 2025
+    cutoff_year = 2026
     year_to_writer = {}
     for fight in get_all_fight_stats(cutoff_year):
         year = fight["event_date"][:4]

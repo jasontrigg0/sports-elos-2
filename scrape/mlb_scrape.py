@@ -51,7 +51,7 @@ def scrape_games(year):
 
 if __name__ == "__main__":
     # for year in range(1876,2025):
-    for year in range(2025,2026):
+    for year in range(2026,2027):
         print(year)
         with open(f"../data/mlb/mlb_{year}.csv","w") as f_out:
             writer = csv.DictWriter(f_out, fieldnames=["year","game_url","date","home_team","away_team","home_score","away_score"])
