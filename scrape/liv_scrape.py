@@ -20,9 +20,10 @@ def get_event_results(event_name):
     l = matches[0]
     l = re.sub("^.+?:","",l)
     data = json.loads(l)
-    for player in data[3]["leaderboardResult"]["playersLeaderboard"]:
-        for round_ in player["roundScores"]:
-            score = round_["roundScore"]
+    for player in data[3]["data"]["playerLeaderboard"]:
+        if player["rounds"] == None: continue
+        for round_ in player["rounds"]:
+            score = round_["score"]
 
             if score == "E":
                 score = 0
@@ -32,9 +33,9 @@ def get_event_results(event_name):
             if score == "-": continue
                 
             yield {
-                "player_id": player["playerId"],
-                "player_name": " ".join([player["playerFirstName"],player["playerLastName"]]),
-                "round": round_["roundNumber"],
+                "player_id": player["player_id"],
+                "player_name": " ".join([player["first_name"],player["last_name"]]),
+                "round": round_["round_number"],
                 "score": score
             }
     
