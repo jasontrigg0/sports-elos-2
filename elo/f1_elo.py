@@ -38,6 +38,8 @@ def load_data():
         if team_name == "Thin Wall Ferrari": #special ferrari
             team_name = "Ferrari"
 
+        if team_name == "Haas F1 Team": #2026 name
+            team_name = "Haas"
 
         #potential prefix issues
         team_name = team_name.replace("Red Bull Racing", "Red Bull")
@@ -46,7 +48,7 @@ def load_data():
         return team_name
 
     def split_team_name(team_name):
-        chassis_constructors = ["McLaren", "Williams", "Lotus", "Sauber", "Kick Sauber", "Tyrrell", "Arrows", "Ferrari", "Alfa Romeo", "Red Bull", "RBR", "Aston Martin", "Mercedes-Benz", "Mercedes", "Matra", "March", "Renault", "Brabham", "Footwork", "Minardi", "Ligier", "Scuderia Toro Rosso", "STR", "Toro Rosso", "Benetton", "Jordan", "Force India", "BRM", "Lola", "Toyota", "Osella", "Cooper", "Surtees", "BAR", "Fittipaldi", "Shadow", "Haas", "Alpine", "Ensign", "ATS", "Honda", "Jaguar", "Prost", "Dallara", "Marussia", "Maserati", "Caterham", "HRT", "Zakspeed", "Toleman", "Hesketh", "Stewart", "Wolf", "Penske", "Super Aguri", "Racing Point", "Virgin", "Theodore", "Gordini", "Porsche", "AGS", "Larrousse", "RAM", "Leyton House", "Vanwall", "Eagle", "Forti", "Spirit", "Pacific", "MRT", "Rial", "Simtek", "Fondmetal", "MF1", "Spyker", "Brawn", "Connaught", "Onyx", "Parnelli", "Venturi", "Euro Brun", "HWM", "Simca-Gordini", "BRP", "Coloni", "Talbot-Lago", "Kurtis Kraft", "Hill", "Tecno", "Kuzma", "Phillips", "Stevens", "Pankratz", "Pawl", "Nichels", "Schroeder", "Bromme", "Klenk", "Lancia", "Scirocco", "Derrington-Francis", "De Tomaso", "Bellasi", "Merzario", "Martini", "Frank Williams Racing", "Lyncar", "Lambo", "Veritas", "Sherman", "Moore", "Deidt", "Hall", "Marchese", "Trevis", "Lesovsky", "Watson", "ERA", "Alta", "OSCA", "LEC", "Boro", "Kojima", "Iso-Marlboro", "Trojan", "Amon", "Token", "Behra-Porsche", "Epperly", "Meskowski", "Christensen", "Ewing", "Scarab", "JBW", "Frazer Nash", "AFM", "Aston Butterworth", "BMW", "AlphaTauri", "Langley", "Rae", "Olson", "Wetteroth", "Snowberger", "Adams", "Dunn", "Elder", "Sutton", "Tec-Mec", "Turner", "Del Roy", "EMW", "RB", "Shannon", "LDS", "Gilby", "Stebro", "Ferguson", "Rebaque", "Moda", "Emeryson", "ENB", "Bugatti", "Wolf-Williams", "Racing Bulls", "Protos", "Eifelland", "Politoys", "Connew"]
+        chassis_constructors = ["McLaren", "Williams", "Lotus", "Sauber", "Kick Sauber", "Tyrrell", "Arrows", "Ferrari", "Alfa Romeo", "Red Bull", "RBR", "Aston Martin", "Mercedes-Benz", "Mercedes", "Matra", "March", "Renault", "Brabham", "Footwork", "Minardi", "Ligier", "Scuderia Toro Rosso", "STR", "Toro Rosso", "Benetton", "Jordan", "Force India", "BRM", "Lola", "Toyota", "Osella", "Cooper", "Surtees", "BAR", "Fittipaldi", "Shadow", "Haas", "Alpine", "Ensign", "ATS", "Honda", "Jaguar", "Prost", "Dallara", "Marussia", "Maserati", "Caterham", "HRT", "Zakspeed", "Toleman", "Hesketh", "Stewart", "Wolf", "Penske", "Super Aguri", "Racing Point", "Virgin", "Theodore", "Gordini", "Porsche", "AGS", "Larrousse", "RAM", "Leyton House", "Vanwall", "Eagle", "Forti", "Spirit", "Pacific", "MRT", "Rial", "Simtek", "Fondmetal", "MF1", "Spyker", "Brawn", "Connaught", "Onyx", "Parnelli", "Venturi", "Euro Brun", "HWM", "Simca-Gordini", "BRP", "Coloni", "Talbot-Lago", "Kurtis Kraft", "Hill", "Tecno", "Kuzma", "Phillips", "Stevens", "Pankratz", "Pawl", "Nichels", "Schroeder", "Bromme", "Klenk", "Lancia", "Scirocco", "Derrington-Francis", "De Tomaso", "Bellasi", "Merzario", "Martini", "Frank Williams Racing", "Lyncar", "Lambo", "Veritas", "Sherman", "Moore", "Deidt", "Hall", "Marchese", "Trevis", "Lesovsky", "Watson", "ERA", "Alta", "OSCA", "LEC", "Boro", "Kojima", "Iso-Marlboro", "Trojan", "Amon", "Token", "Behra-Porsche", "Epperly", "Meskowski", "Christensen", "Ewing", "Scarab", "JBW", "Frazer Nash", "AFM", "Aston Butterworth", "BMW", "AlphaTauri", "Langley", "Rae", "Olson", "Wetteroth", "Snowberger", "Adams", "Dunn", "Elder", "Sutton", "Tec-Mec", "Turner", "Del Roy", "EMW", "RB", "Shannon", "LDS", "Gilby", "Stebro", "Ferguson", "Rebaque", "Moda", "Emeryson", "ENB", "Bugatti", "Wolf-Williams", "Racing Bulls", "Protos", "Eifelland", "Politoys", "Connew", "Audi", "Cadillac"]
 
         for cc in chassis_constructors:
             if team_name == cc:
@@ -121,7 +123,7 @@ def load_data():
         return chassis
         
     def get_engine(chassis, engine, year):
-        engine_constructors = ["Mercedes", "Renault", "Ferrari", "Honda", "Cosworth", "BMW", "Toyota", "Petronas", "Ford", "Lamborghini", "Yamaha", "Judd", "Porsche", "Ilmor", "Mugen Honda", "Hart", "Peugeot", "Mecachrome", "TAG", "Zakspeed", "Alfa Romeo", "Motori Moderni", "Matra", "BRM", "Pratt & Whitney", "Tecno", "Repco", "Maserati", "Climax", "ATS", "Serenissima", "Weslake", "OSCA", "Gordini", "Offenhauser", "Mercedes-Benz", "Alta", "Bristol", "Lea Francis", "Vanwall", "Lancia", "Talbot-Lago", "Veritas", "Novi", "Milano", "ERA", "Scarab", "Aston Martin", "Plate", "Kuchen", "Cummins", "Aston Butterworth", "JAP", "Jaguar", "Borgward", "EMW", "Bugatti"]
+        engine_constructors = ["Mercedes", "Renault", "Ferrari", "Honda", "Cosworth", "BMW", "Toyota", "Petronas", "Ford", "Lamborghini", "Yamaha", "Judd", "Porsche", "Ilmor", "Mugen Honda", "Hart", "Peugeot", "Mecachrome", "TAG", "Zakspeed", "Alfa Romeo", "Motori Moderni", "Matra", "BRM", "Pratt & Whitney", "Tecno", "Repco", "Maserati", "Climax", "ATS", "Serenissima", "Weslake", "OSCA", "Gordini", "Offenhauser", "Mercedes-Benz", "Alta", "Bristol", "Lea Francis", "Vanwall", "Lancia", "Talbot-Lago", "Veritas", "Novi", "Milano", "ERA", "Scarab", "Aston Martin", "Plate", "Kuchen", "Cummins", "Aston Butterworth", "JAP", "Jaguar", "Borgward", "EMW", "Bugatti", "Audi"]
 
         if engine == "":
             if chassis in engine_constructors:
@@ -141,22 +143,31 @@ def load_data():
             engine = "Porsche"
         if chassis == "Frazer Nash" and year == 1952:
             engine = "Bristol"
-        if chassis == "McLaren" and year == 2025:
+            
+        #starting 2025 season
+        if chassis == "McLaren" and year in [2025,2026]:
             engine = "Mercedes"
+        #referred to as "RBPT" or "Honda RBPT" in the past
         if chassis == "Red Bull" and year == 2025:
             engine = "Honda"
         if chassis == "Racing Bulls" and year == 2025:
             engine = "Honda"
-        if chassis == "Williams" and year == 2025:
-            engine = "Mercedes"
         if chassis == "Kick Sauber" and year == 2025:
-            engine = "Ferrari"
-        if chassis == "Haas" and year == 2025:
             engine = "Ferrari"
         if chassis == "Alpine" and year == 2025:
             engine = "Renault"
         if chassis == "Aston Martin" and year == 2025:
             engine = "Mercedes"
+        if chassis == "Williams" and year in [2025,2026]:
+            engine = "Mercedes"
+        if chassis == "Haas" and year in [2025,2026]:
+            engine = "Ferrari"
+        if chassis in ["Red Bull", "Racing Bulls"] and year == 2026:
+            engine = "Ford"
+        if chassis == "Alpine" and year == 2026:
+            engine = "Mercedes"
+        if chassis == "Cadillac" and year == 2026:
+            engine = "Ferrari"
         
         engine_map = {
             "BWT Mercedes": "Mercedes",

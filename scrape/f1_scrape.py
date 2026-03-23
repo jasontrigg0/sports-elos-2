@@ -14,14 +14,14 @@ def get_all_events(year):
     response = requests.get(url, headers=headers)
 
     
-    prefix = "2b"
+    prefix = None
     for l in response.text.split("\n"):
         if "children" in l and "dropdownData" in l:
-            line_prefix = l.split(":")[0]
-            if line_prefix != prefix:
-                print("incorrect prefix")
-                print(line_prefix, prefix)
-                raise
+            prefix = l.split(":")[0]
+
+    if not prefix:
+        raise "Couldn't find prefix"
+    
     for l in response.text.split("\n"):
         if re.findall(f"^{prefix}:",l):
             l = re.sub(r"^.*?\[","[",l)
