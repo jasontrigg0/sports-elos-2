@@ -16,19 +16,24 @@ def scrape_teams(year):
     return allTeamUrls;
 
 def scrape_games(year):
-    time.sleep(10)
-    url = f'https://www.pro-football-reference.com/years/{year}/games.htm';
-    html = requests.get(url, headers = REQUEST_HEADERS).content
+    with open("/tmp/2025 NFL Regular Season Schedule _ Pro-Football-Reference.com.html") as f:
+        soup = BeautifulSoup(f, "html.parser")
+        
+    # time.sleep(10)
+    # url = f'https://www.pro-football-reference.com/years/{year}/games.htm';
+    # html = requests.get(url, headers = REQUEST_HEADERS).content
+    # soup = BeautifulSoup(html, features="lxml")
 
-    soup = BeautifulSoup(html, features="lxml")
     output = []
     for game in soup.select('div#all_games tbody tr:not(.thead)'):
+        print(game)
         if game.select('td[data-stat="game_date"]')[0].text == "Playoffs": continue
         
         winner_url = game.select('td[data-stat="winner"] a')[0]["href"]
         loser_url = game.select('td[data-stat="loser"] a')[0]["href"]
-        winner = winner_url.split("/")[2].upper()
-        loser = loser_url.split("/")[2].upper()
+
+        winner = winner_url.split("/")[-2].upper()
+        loser = loser_url.split("/")[-2].upper()
 
         location = game.select('td[data-stat="game_location"]')[0].text
         winner_score = game.select('td[data-stat="pts_win"]')[0].text
@@ -38,7 +43,7 @@ def scrape_games(year):
         loser_yards = game.select('td[data-stat="yards_lose"]')[0].text
         
         game_url = game.select('td[data-stat="boxscore_word"] a')[0]["href"]
-        date = game_url.split("/")[2][:8]
+        date = game_url.split("/")[-1][:8]
 
         if datetime.datetime.strptime(date, "%Y%m%d").date() >= datetime.date.today():
             continue
