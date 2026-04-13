@@ -20,7 +20,7 @@ def get_event_results(event_name):
     l = matches[0]
     l = re.sub("^.+?:","",l)
     data = json.loads(l)
-    for player in data[3]["data"]["playerLeaderboard"]:
+    for player in data[3]["leaderboardResult"]["playersLeaderboard"]:
         if player["rounds"] == None: continue
         for round_ in player["rounds"]:
             score = round_["score"]
@@ -43,7 +43,7 @@ def get_event_results(event_name):
 def get_all_events(year):
     url = "https://www.livgolf.com/schedule"
     headers = {
-        "Next-Action": "a71dbe0d7cf2287e38a8a70433dc04aa4c45b5ba",
+        "Next-Action": "7fd51be4e2065909862fab9779e033675be9fa07b6",
     }
     payload = f'''["{year}",[]]'''
     response = requests.post(url, headers=headers, data=payload)
