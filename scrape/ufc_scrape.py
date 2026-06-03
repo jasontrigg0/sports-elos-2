@@ -4,9 +4,15 @@ from datetime import datetime
 import csv
 import re
 
+cookies = {
+    "_fmc": "1780506427.00e5ac24af4067b4f3ad23162bd2cf76962c231bdd770502de4081088fd1861f",
+}
+
+
 def get_all_fight_stats(cutoff_year):
-    html = requests.get("http://ufcstats.com/statistics/events/completed?page=all").content
+    html = requests.get("http://ufcstats.com/statistics/events/completed?page=all", cookies=cookies).content
     soup = BeautifulSoup(html, features="lxml")
+        
     all_events = soup.select("tbody tr")
     for event in all_events:
         if not event.select("span"): continue
@@ -30,8 +36,9 @@ def get_all_fight_stats(cutoff_year):
             }
 
 def get_event_fight_stats(event_url):
-    html = requests.get(event_url).content
+    html = requests.get(event_url, cookies=cookies).content
     soup = BeautifulSoup(html, features="lxml")
+
     all_fights = soup.select("tbody tr")
     for fight in all_fights:
         fight_url = fight["data-link"]
@@ -62,9 +69,9 @@ def get_event_fight_stats(event_url):
         yield fight_data
 
 def get_fight_details(fight_url):
-    html = requests.get(fight_url).content
+    html = requests.get(fight_url, cookies=cookies).content
     soup = BeautifulSoup(html, features="lxml")
-
+    
     division = soup.select("i.b-fight-details__fight-title")[0].text.strip()
 
     #overall info

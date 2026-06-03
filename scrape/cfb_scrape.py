@@ -10,11 +10,14 @@ REQUEST_HEADERS = {
 }
 
 def scrape_games(year):
-    time.sleep(2)
-    url = f'https://www.sports-reference.com/cfb/years/{year}-schedule.html'
-    html = requests.get(url, headers=REQUEST_HEADERS).content
+    with open("/tmp/cfb.html") as f:
+        soup = BeautifulSoup(f, "html.parser")
 
-    soup = BeautifulSoup(html, features="lxml")
+    
+    # time.sleep(2)
+    # url = f'https://www.sports-reference.com/cfb/years/{year}-schedule.html'
+    # html = requests.get(url, headers=REQUEST_HEADERS).content
+    # soup = BeautifulSoup(html, features="lxml")
 
     for game in soup.select('tbody tr:not(.thead)'):
         game_url = game.select('td[data-stat="date_game"] a')[0]["href"]

@@ -3,16 +3,19 @@ import json
 import re
 import csv
 
-def get_event_results(event_name):
-    url = f"https://www.livgolf.com/schedule/{event_name}/leaderboard?_rsc=k4aap"
+def get_event_results(year, event_name, event_id):
+    url = f"https://www.livgolf.com/leaderboard/{year}/{event_name}"
 
     headers = {
-        "RSC": "1",
+        "content-type": "text/plain;charset=UTF-8",
+        "next-action": "7028e3d76d33bd5ff784a9adcfa6db6d8a6befbb9f",
     }
 
-    response = requests.get(url, headers=headers)
+    payload = f"[{event_id},{year},null]"
+    
+    response = requests.post(url, headers=headers, data=payload)
 
-    matches = [l for l in response.text.split("\n") if "playersLeaderboard" in l]
+    matches = [l for l in response.text.split("\n") if "playoff" in l]
 
     if len(matches) != 1:
         raise Exception("New format")
@@ -20,47 +23,54 @@ def get_event_results(event_name):
     l = matches[0]
     l = re.sub("^.+?:","",l)
     data = json.loads(l)
-    for player in data[3]["leaderboardResult"]["playersLeaderboard"]:
-        if player["rounds"] == None: continue
-        for round_ in player["rounds"]:
-            score = round_["score"]
 
-            if score == "E":
-                score = 0
-            else:
-                score = score.replace("+","")
+    all_players = data["all"]["players"]
 
-            if score == "-": continue
-                
+    if data["playoff"] != "$undefined":
+        all_players += data["playoff"]["players"]
+    
+    for player in all_players:
+        if "playoff" in player["rounds"]: continue #player information found in the playoff section
+        for i,score in enumerate(player["rounds"]):
+            if score == None: continue
             yield {
-                "player_id": player["player_id"],
-                "player_name": " ".join([player["first_name"],player["last_name"]]),
-                "round": round_["round_number"],
+                "player_id": player["playerId"],
+                "player_name": player["player"],
+                "round": (i+1),
                 "score": score
             }
     
                 
 def get_all_events(year):
-    url = "https://www.livgolf.com/schedule"
-    headers = {
-        "Next-Action": "7fd51be4e2065909862fab9779e033675be9fa07b6",
+    url = "https://www.livgolf.com/leaderboard"
+    params = {
+        "_rsc": "qmbzs"
     }
-    payload = f'''["{year}",[]]'''
-    response = requests.post(url, headers=headers, data=payload)
+
+    headers = {
+        "rsc": "1",
+        "next-router-segment-prefetch": "/!KG1haW4p/!KGdsb2JhbCk/leaderboard/__PAGE__",
+        "next-router-prefetch": "1",
+    }
+    
+    response = requests.get(url, params=params, headers=headers)
     for l in response.text.split("\n"):
-        if "completedEvents" in l:
-            l = re.sub("^(.*?){","{",l)
+        if "seasonsWithEvents" in l:
+            l = re.sub("^.+?:","",l)
             data = json.loads(l)
-            for e in data["completedEvents"]:
-                event_name = e["entity"]["slug"]
-                event_id = e["entity"]["fields"]["livEventId"]
-                print(event_name, event_id)
-                start_date = e["entity"]["fields"]["startDate"].split("T")[0].replace("-","")
-                yield {
-                    "event_id": event_id,
-                    "event_name": event_name,
-                    "start_date": start_date,
-                }
+            all_seasons = data["rsc"][3]["children"][0][3]["children"][1][3]["seasonsWithEvents"]
+            for season in all_seasons:
+                if season["season"] != year: continue
+                for e in season["events"]:
+                    event_id = e["id"]
+                    event_name = e["event"]
+                    print(event_name, event_id)
+                    start_date = e["startDate"].split("T")[0].replace("-","")
+                    yield {
+                        "event_id": event_id,
+                        "event_name": event_name,
+                        "start_date": start_date,
+                    }
                 
             
 if __name__ == "__main__":
@@ -71,8 +81,9 @@ if __name__ == "__main__":
         writer.writeheader()
         events = get_all_events(year)
         for e in events:
+            print(e)
             #skip team championships and other year end events without good data
             if e["event_name"] in ["miami-2022","miami-2023","liv-golf-team-championship-dallas-2024","promotions-event-2024"]: continue
-            for result in get_event_results(e["event_name"]):
+            for result in get_event_results(year, e["event_name"], e["event_id"]):
                 row = {**e, **result}
                 writer.writerow(row)
