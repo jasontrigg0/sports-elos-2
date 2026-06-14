@@ -8,7 +8,7 @@ def get_event_results(year, event_name, event_id):
 
     headers = {
         "content-type": "text/plain;charset=UTF-8",
-        "next-action": "7028e3d76d33bd5ff784a9adcfa6db6d8a6befbb9f",
+        "next-action": "7017cee3851b4c1d965e9e9d88ee270344adc94d04",
     }
 
     payload = f"[{event_id},{year},null]"
